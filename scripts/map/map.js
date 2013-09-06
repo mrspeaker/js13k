@@ -34,7 +34,7 @@ var Map = {
 			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5],
 			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
 		];
-		this.walkable = 0;
+		this.walkable = BLOCKS.walkable;
 		this.cellH = this.cells.length;
 		this.cellW = this.cells[0].length;
 		this.h = this.cellH * sheet.h;
