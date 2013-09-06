@@ -1,22 +1,79 @@
-var map = {
+var Map = {
 
 	x: 0,
 	y: 0,
 
-	init: function () {
+	init: function (sheet, camera) {
+
+		this.sheet = sheet;
+		this.camera = camera;
+		this.camera.x = 40;
+
+		this.cells = [
+			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+		];
+		this.w = this.cells[0].length * sheet.w;
+
+		return this;
 
 	},
 
 	tick: function (player) {
 
 		// Move camera to player pos
+		this.camera.x += Math.sin(Date.now() / 1000);
 
 	},
 
-	render: function () {
+	render: function (c) {
 
-		// Translate to camera pos
-		// Draw map to view port
+		var tw = game.tw,
+			th = game.th,
+			cellW = this.sheet.cellW,
+			cellH = this.sheet.cellH,
+			stx = this.camera.x / tw | 0,
+			sty = this.camera.y / th | 0,
+			endx = stx + (this.camera.w / tw | 0) + 1,
+			endy = sty + (this.camera.h / th | 0) + 1,
+			j,
+			i,
+			cell;
+
+
+		for (j = sty; j <= endy; j++) {
+			if (j < 0 || j > this.cells.length - 1) {
+				continue;
+			}
+			for (i = stx; i <= endx; i++) {
+				if (i > this.cells[0].length - 1) {
+					continue;
+				}
+
+				cell = this.cells[j][i];
+				if (cell === 0) {
+					continue;
+				}
+
+				this.sheet.render(
+					c,
+					cell % cellW  | 0,
+					cell / cellW | 0,
+					i * tw,
+					j * th);
+			}
+		}
+
+
 
 	}
 };

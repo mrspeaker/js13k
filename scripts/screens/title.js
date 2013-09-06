@@ -3,11 +3,19 @@ Screen.title = {
 
 	init: function () {
 		this.ticks = 0;
-		this.tiles = Sheet(game.res.tiles, game.tw, game.th);
+		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
+		this.camera = Camera.init(game.ctx.w, game.ctx.h);
+		this.map = Map.init(this.tiles, this.camera);
+
+		this.player = Player.init(100, 100);
+
+		return this;
 	},
 
-	tick: function () {
-		this.ticks++;
+	tick: function (input) {
+		this.player.tick(input, this.map);
+		this.map.tick();
+
 	},
 
 	render: function (c) {
@@ -19,9 +27,9 @@ Screen.title = {
 		c.font = "10pt monospace";
 		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
 
-		this.tiles.render(c, 2, 0, 20, 20);
-		this.tiles.render(c, 3, 0, 20 + game.tw, 20);
+		this.camera.render(c, [this.map, this.player]);
 
 	}
 
 };
+

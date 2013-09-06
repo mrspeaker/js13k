@@ -4,20 +4,19 @@ var game = {
 	th: 24,
 	res: {},
 
-	init: function (input) {
+	init: function () {
 		this.ctx = this.createCanvas();
 		this.res = {
 			"tiles": GEN.tiles(this.tw, this.th)
 		}
-		input.init();
+		this.input = Input.init();
 		this.reset();
 		this.run();
 
 	},
 
 	setScreen: function (screen) {
-		this.screen = screen;
-		this.screen.init();
+		this.screen = screen.init();
 	},
 
 	createCanvas: function () {
@@ -49,7 +48,7 @@ var game = {
 	},
 
 	run: function (d) {
-		this.screen.tick();
+		this.screen.tick(this.input);
 		this.screen.render(this.ctx);
 
 		window.requestAnimationFrame(function () {

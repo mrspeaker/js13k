@@ -6,6 +6,8 @@ Screen.level = {
 		this.map = map;
 		this.player = player;
 		this.reset();
+
+		return this;
 	},
 
 	reset: function () {

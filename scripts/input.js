@@ -1,10 +1,17 @@
-var input = {
+var Input = {
 
 	keys: {
-		"up": { wasDown: false, isDown: false },
-		"down": { wasDown: false, isDown: false },
-		"left": { wasDown: false, isDown: false },
-		"right": { wasDown: false, isDown: false },
+		37: { wasDown: false, isDown: false },
+		38: { wasDown: false, isDown: false },
+		39: { wasDown: false, isDown: false },
+		40: { wasDown: false, isDown: false }
+	},
+
+	actions: {
+		"up": 38,
+		"right": 39,
+		"down": 40,
+		"left": 37
 	},
 
 	init: function () {
@@ -26,6 +33,12 @@ var input = {
 			keyed(e.keyCode, false);
 		}, false );
 
+		return this;
+
+	},
+
+	isDown: function (action) {
+		return  this.keys[this.actions[action]].isDown;
 	}
 
 };
