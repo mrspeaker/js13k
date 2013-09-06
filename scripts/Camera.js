@@ -1,7 +1,7 @@
 var Camera = {
 	x: 0,
 	y: 0,
-	xRange: 100,
+	xRange: 80,
 	yRange: 100,
 	init: function (entity, x, y, w, h) {
 
@@ -52,7 +52,7 @@ var Camera = {
 	tick: function () {
 
 		var e = this.entity,
-			center = {x: this.x + e.w / 2, y: this.y + e.h / 2},
+			center = {x: this.x + this.w / 2, y: this.y + this.h / 2},
 			xr = this.xRange,
 			yr = this.yRange,
 			newX,
@@ -75,6 +75,22 @@ var Camera = {
 
 	},
 	render: function (c, renderables) {
+		var self = this;
+
+		renderables.push({
+			render: function (c, cam) {
+
+				c.lineWidth = 1;
+				c.strokeStyle = "rgba(200, 255, 255, 1)";
+				c.strokeRect(
+					cam.x + (cam.w / 2) - cam.xRange,
+					cam.y + (cam.h / 2) - cam.yRange,
+					cam.xRange * 2,
+					cam.yRange * 2);
+
+			}
+		})
+
 		c.save();
 		c.translate(-(Math.round(this.x)), -(Math.round(this.y)));
 

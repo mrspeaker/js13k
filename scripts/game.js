@@ -12,7 +12,6 @@ var game = {
 		this.input = Input.init();
 		this.reset();
 		this.run();
-
 	},
 
 	setScreen: function (screen) {
@@ -62,7 +61,7 @@ var GEN = {
 	tiles: function (w, h) {
 
 		var tile,
-			maxTiles = 5,
+			maxTiles = 8,
 			x, y, i, pixels,
 			c,
 			can;
@@ -85,9 +84,9 @@ var GEN = {
 				for(x = 0; x < w; x++) {
 
 					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
-					pixels.data[off] = (Math.random() * 40 * tile | 0) + (40 * tile);
-					pixels.data[off + 1] = (Math.random() * 40 * tile | 0) + (40 * tile);
-					pixels.data[off + 2] = (Math.random() * 40 * tile | 0) + (40 * tile);
+					pixels.data[off] = (Math.random() * 20 * tile | 0) + (20 * tile);
+					pixels.data[off + 1] = (Math.random() * 20 * tile | 0) + (20 * tile);
+					pixels.data[off + 2] = (Math.random() * 20 * tile | 0) + (20 * tile);
 
 				}
 
