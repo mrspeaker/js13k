@@ -1,23 +1,5 @@
 var Ghoul = function () {
-
+	this.w = 15;
+	this.h = 30;
 };
-
-Ghoul.prototype = {
-
-	init: function () {
-
-	},
-
-	reset: function () {
-
-	},
-
-	tick: function () {
-
-	},
-
-	render: function (gfx) {
-
-	}
-
-}
+Ghoul.prototype = new Entity;

@@ -22,7 +22,11 @@ var Map = {
 			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 		];
-		this.w = this.cells[0].length * sheet.w;
+		this.walkable = 0;
+		this.cellH = this.cells.length;
+		this.cellW = this.cells[0].length;
+		this.h = this.cellH * sheet.h;
+		this.w = this.cellW * sheet.w;
 
 		return this;
 
@@ -32,6 +36,31 @@ var Map = {
 
 		// Move camera to player pos
 		this.camera.x += Math.sin(Date.now() / 1000);
+
+	},
+
+	getBlocks: function(blocks) {
+
+		return blocks.map(function (b) {
+
+			var row = b[1] / this.sheet.h | 0,
+				col = b[0] / this.sheet.w | 0;
+
+			if (row < 0 || row > this.cellH - 1) {
+				return null;
+			}
+
+			return this.cells[row][col];
+
+		}, this);
+
+	},
+
+	getBlockEdge: function(pos, vertical) {
+
+		var snapTo = vertical ? this.sheet.h : this.sheet.w;
+
+	    return utils.snap(pos, snapTo);
 
 	},
 
@@ -51,11 +80,11 @@ var Map = {
 
 
 		for (j = sty; j <= endy; j++) {
-			if (j < 0 || j > this.cells.length - 1) {
+			if (j < 0 || j > this.cellH - 1) {
 				continue;
 			}
 			for (i = stx; i <= endx; i++) {
-				if (i > this.cells[0].length - 1) {
+				if (i > this.cellW - 1) {
 					continue;
 				}
 
