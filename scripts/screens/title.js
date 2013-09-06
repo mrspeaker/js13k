@@ -4,16 +4,17 @@ Screen.title = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.camera = Camera.init(game.ctx.w, game.ctx.h);
+		this.player = new Player().init(100, 100);
+		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
-		this.player = new Player().init(100, 100);
 		this.ghoul = new Ghoul().init(200, 200);
 
 		return this;
 	},
 
 	tick: function (input) {
+		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghoul.tick();
 		this.map.tick();

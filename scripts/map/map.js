@@ -7,7 +7,6 @@ var Map = {
 
 		this.sheet = sheet;
 		this.camera = camera;
-		this.camera.x = 40;
 
 		this.cells = [
 			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -28,14 +27,14 @@ var Map = {
 		this.h = this.cellH * sheet.h;
 		this.w = this.cellW * sheet.w;
 
+		this.camera.setBounds(this.w, this.h);
+
 		return this;
 
 	},
 
 	tick: function (player) {
 
-		// Move camera to player pos
-		this.camera.x += Math.sin(Date.now() / 1000);
 
 	},
 

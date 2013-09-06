@@ -1,12 +1,77 @@
 var Camera = {
 	x: 0,
 	y: 0,
-	init: function (w, h) {
+	xRange: 100,
+	yRange: 100,
+	init: function (entity, x, y, w, h) {
 
+		this.entity = entity;
 		this.w = w;
 		this.h = h;
+		this.x = x;
+		this.y = y;
+
+		this.track(entity);
 
 		return this;
+
+	},
+	setBounds: function (w, h) {
+		this.bounds = [w, h];
+	},
+	track: function (entity) {
+
+		var e = entity || this.entity;
+		this.x = e.x - (this.w / 2) + (e.w / 2);
+		this.y = e.y - (this.h / 2);
+
+		this.constrainToBounds();
+
+	},
+	constrainToBounds: function () {
+
+		if (this.x < 0) {
+			this.x = 0;
+		}
+		if (this.x > 0) {
+			if (this.bounds && this.x + this.w > this.bounds[0]) {
+				this.x = this.bounds[0] - this.w;
+			};
+		}
+		if (this.y < 0) {
+			this.y = 0;
+		}
+		if (this.y > 0) {
+			if (this.bounds && this.y + this.h > this.bounds[1]) {
+				this.y = this.bounds[1] - this.h;
+			};
+		}
+
+	},
+
+	tick: function () {
+
+		var e = this.entity,
+			center = {x: this.x + e.w / 2, y: this.y + e.h / 2},
+			xr = this.xRange,
+			yr = this.yRange,
+			newX,
+			newY;
+
+		if(e.x < center.x - xr) {
+			this.x = e.x - (this.w / 2) + xr;
+		}
+		if(e.x + e.w > center.x + xr) {
+			this.x = e.x + e.w - (this.w / 2) - xr;
+		}
+		if(e.y < center.y - yr) {
+			this.y = e.y - (this.h / 2) + yr;
+		}
+		if(e.y + e.h > center.y + yr) {
+			this.y = e.y + e.h - (this.h / 2) - yr;
+		}
+
+		this.constrainToBounds();
 
 	},
 	render: function (c, renderables) {

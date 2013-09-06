@@ -1,6 +1,6 @@
 var Player = function() {
-	this.w = 19;
-	this.h = 32;
+	this.w = 17;
+	this.h = 24;
 };
 Player.prototype = new Entity;
 Player.prototype.tick = function (input, map) {
