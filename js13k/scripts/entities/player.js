@@ -29,12 +29,9 @@ Player.prototype.tick = function (input, map) {
 
 	if (input.isDown("up")) {
 		if (this.inWater || (this.onLadder && !this.onTopOfLadder)) {
-			//this.moveBy(0, -this.speed);
-			//this.yo = -this.speed;
 			this.acc[1] -= speed;
 		} else {
 			if (!this.falling) {
-				//this.moveBy(0, -this.speed * 30);
 				this.acc[1] = -map.sheet.h - 1;
 				this.vel[1] = 0;
 				this.falling = true
@@ -64,6 +61,7 @@ Player.prototype.tick = function (input, map) {
 	this.checkBlocks(map);
 
 };
+
 Player.prototype.tickVelocity = function () {
 	this.grav = this.falling ? this.grav + 0.25 : 0;
 	this.vel = [this.vel[0] + this.acc[0], this.vel[1] + this.acc[1] + this.grav];
@@ -76,6 +74,19 @@ Player.prototype.tickVelocity = function () {
 
 	this.xo += this.vel[0];
 	this.yo += this.vel[1];
+};
+
+Player.prototype.hitSpear = function (spear) {
+	if (spear.stuck) {
+		this.onLadder = true;
+		this.falling = false;
+		if (this.y + this.h - spear.y < 10) {
+			this.onTopOfLadder = true;
+			this.y = spear.y - this.h;
+		}
+	} else {
+		this.onTopOfLadder = false;
+	}
 };
 
 Player.prototype.checkBlocks = function (map) {

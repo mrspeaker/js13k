@@ -32,4 +32,14 @@ Spear.prototype.tick = function (map) {
 	}
 
 	return !(this.remove);
-}
+};
+Spear.prototype.hit = function (e) {
+
+	if (!(e instanceof Spear)) {
+		//e.remove = true;
+		this.remove = true;
+	} else {
+		//e.stuck = true;
+		this.stuck = true;
+	}
+};

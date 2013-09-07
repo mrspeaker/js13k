@@ -12,6 +12,7 @@ Entity.prototype = {
 		this.y = y;
 		return this;
 	},
+	hit: function () {},
 	hitBlocks: function () {},
 	tick: function () {},
 	move: function (x, y, map) {

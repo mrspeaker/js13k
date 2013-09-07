@@ -8,7 +8,7 @@ Screen.title = {
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
-		this.ghoul = new Ghoul().init(200, 200);
+		this.ghoul = new Ghoul().init(200, 280);
 
 		return this;
 	},
@@ -17,6 +17,9 @@ Screen.title = {
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghoul.tick();
+
+		utils.checkCollisions([this.ghoul, this.player.projectiles]);
+		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 	},
 
 	render: function (c) {
