@@ -4,14 +4,16 @@ var Input = {
 		37: { wasDown: false, isDown: false },
 		38: { wasDown: false, isDown: false },
 		39: { wasDown: false, isDown: false },
-		40: { wasDown: false, isDown: false }
+		40: { wasDown: false, isDown: false },
+		32: { wasDown: false, isDown: false },
 	},
 
 	actions: {
 		"up": 38,
 		"right": 39,
 		"down": 40,
-		"left": 37
+		"left": 37,
+		"fire": 32
 	},
 
 	init: function () {
@@ -37,8 +39,24 @@ var Input = {
 
 	},
 
+	tick: function () {
+
+		var key;
+
+		for(key in this.keys) {
+			this.keys[key].wasDown = this.keys[key].isDown;
+		}
+
+	},
+
 	isDown: function (action) {
-		return  this.keys[this.actions[action]].isDown;
+		return this.keys[this.actions[action]].isDown;
+	},
+	wasDown: function (action) {
+		return this.keys[this.actions[action]].wasDown;
+	},
+	pressed: function (action) {
+		return this.isDown(action) && !(this.wasDown(action));
 	}
 
 };

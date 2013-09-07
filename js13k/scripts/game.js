@@ -48,6 +48,7 @@ var game = {
 
 	run: function (d) {
 		this.screen.tick(this.input);
+		this.input.tick();
 		this.screen.render(this.ctx);
 
 		window.requestAnimationFrame(function () {

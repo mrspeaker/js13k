@@ -17,8 +17,6 @@ Screen.title = {
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghoul.tick();
-		this.map.tick();
-
 	},
 
 	render: function (c) {

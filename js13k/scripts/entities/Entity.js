@@ -1,6 +1,7 @@
 var Entity = function () {
 	this.w = 10;
 	this.h = 10;
+	this.remove = false;
 	this.falling = false;
 	this.xo = 0;
 	this.yo = 0;
