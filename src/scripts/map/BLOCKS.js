@@ -6,7 +6,8 @@ var BLOCKS = {
 		LADDER: 1,
 		WATER: 2,
 		WATERRIGHT: 3,
-		WATERLEFT: 4
+		WATERLEFT: 4,
+		LAVA: 8
 	}
 
 };

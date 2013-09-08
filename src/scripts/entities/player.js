@@ -15,6 +15,8 @@ Player.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
+	this.initpos = [x, y];
+
 	this.projectiles = [];
 
 	return this;
@@ -125,12 +127,14 @@ Player.prototype.checkBlocks = function (map) {
 	if (blocks.indexOf(BLOCKS.type.WATERRIGHT) > -1) {
 		this.xo += 4;
 		this.inWater = true;
-		//this.falling = false;
 	}
 	if (blocks.indexOf(BLOCKS.type.WATERLEFT) > -1) {
 		this.xo -= 4;
 		this.inWater = true;
-		//this.falling = false;
+	}
+	if (blocks.indexOf(BLOCKS.type.LAVA) > -1) {
+		this.x = this.initpos[0];
+		this.y = this.initpos[1];
 	}
 
 };

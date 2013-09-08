@@ -2,7 +2,7 @@ var GEN = {
 	tiles: function (w, h) {
 
 		var tile,
-			maxTiles = 8,
+			maxTiles = 20,
 			x, y, i, pixels,
 			c,
 			can;
@@ -23,7 +23,8 @@ var GEN = {
 					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
 
 					var color = 0xff00ff,
-						brr = 255;
+						brr = 255,
+						siny;
 
 					brr = 255 - ((Math.random() * 96) | 0);
 					switch (tile) {
@@ -51,11 +52,22 @@ var GEN = {
 						case 3:
 						case 4:
 							color = 0x4b83c3;
-							var siny = y % 12 - ((tile-2)*4);
+							siny = y % 12 - ((tile-2)*4);
 							if (siny < 0) siny += 12;
 							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
 								color = 0xffffff;
 							}
+							break;
+						case 8:
+						case 9:
+						case 10:
+							color = 0xfe9b00;
+							siny = y % 4 - (tile - 8);
+							if (siny < 0) siny += 4;
+							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
+								color = 0xe12900;
+							}
+							brr = Math.min(255, brr * 1.4);
 							break;
 					}
 
