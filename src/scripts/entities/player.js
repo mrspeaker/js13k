@@ -84,6 +84,7 @@ Player.prototype.tick = function (input, map) {
 		this.projectiles.push(
 			new Spear().init(this.x, this.y, this.dir)
 		);
+		audio.sfx.shoot();
 	}
 
 	this.tickVelocity();
@@ -181,9 +182,6 @@ Player.prototype.render = function (c) {
 	this.traps.forEach(function (t) {
 		return t.render(c);
 	});
-
-	// c.fillStyle = "hsl(0, 0%, 100%)";
-	// c.fillRect(this.x, this.y, this.w, this.h);
 
 	c.strokeStyle = "#000";
 
