@@ -29,12 +29,28 @@ var GEN = {
 					brr = 255 - ((Math.random() * 96) | 0);
 					switch (tile) {
 						case 5:
+						case 11:
+						case 12:
 							color = 0x715137;
 							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
 			                    color = 0x6AAA40;
 			                } else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
 			                    brr = brr * 2 / 3;
 			                }
+			                if (tile === 11 && x < 2 && y < 2) {
+			                	var dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
+			                	if (dist >= 1.8) {
+									color = -1;
+								}
+								break;
+							}
+							if (tile === 12 && x > 17 && y < 2) {
+			                	var dist = Math.sqrt((17 - x) * (17 - x) + (2 - y) * (2 - y));
+			                	if (dist >= 1.9) {
+									color = -1;
+								}
+								break;
+							}
 							break;
 						case 7:
 							color = 0x715137;
