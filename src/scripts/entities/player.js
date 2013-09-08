@@ -120,6 +120,10 @@ Player.prototype.hitSpear = function (spear) {
 		this.onTopOfLadder = false;
 	}
 };
+
+Player.prototype.isMoving = function () {
+	return Math.abs(this.vel[0]) > 0.3;
+};
 Player.prototype.hitBlocks = function (x, y) {
 
 
@@ -194,8 +198,16 @@ Player.prototype.render = function (c) {
 	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
-	c.fillRect(this.x + 2, this.y +20, 8, 3);
-
+	if (this.isMoving()) {
+		if ((Date.now() / 80 | 0) % 2 === 0) {
+			c.fillRect(this.x + 2, this.y +20, 3, 3);
+			c.fillRect(this.x + 8, this.y +20, 3, 3);
+		} else {
+			c.fillRect(this.x + 4, this.y +20, 4, 3);
+		}
+	} else {
+		c.fillRect(this.x + 4, this.y +20, 4, 3);
+	}
 	c.fillRect(this.x + 4, this.y + 11, 3, 5);
 
 };
