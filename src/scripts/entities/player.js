@@ -18,6 +18,12 @@ Player.prototype.init = function (x, y) {
 	this.initpos = [x, y];
 
 	this.projectiles = [];
+	this.offs = {
+		headX: 2,
+		headY: -3,
+		bodyX: 0,
+		bodyY: 5
+	}
 
 	return this;
 },
@@ -143,10 +149,29 @@ Player.prototype.checkBlocks = function (map) {
 
 };
 Player.prototype.render = function (c) {
+
+	c.shadowBlur = 0;
+
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
 	});
-	c.fillStyle = "#22f";
-	c.fillRect(this.x, this.y, this.w, this.h);
+
+	// c.fillStyle = "hsl(0, 0%, 100%)";
+	// c.fillRect(this.x, this.y, this.w, this.h);
+
+	c.strokeStyle = "#000";
+
+	c.fillStyle = "hsl(10, 70%, 30%)";
+	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+
+	c.fillStyle = "hsl(20, 30%, 40%)";
+	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+
+	c.fillStyle = "hsl(50, 40%, 50%)";
+	c.fillRect(this.x + 2, this.y +20, 8, 3);
+
+	c.fillRect(this.x + 4, this.y + 11, 3, 5);
 
 };

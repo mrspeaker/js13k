@@ -43,3 +43,14 @@ Spear.prototype.hit = function (e) {
 		this.stuck = true;
 	}
 };
+Spear.prototype.render = function (c) {
+	c.fillStyle = "#ff0";
+	c.strokeStyle = "#000";
+	c.lineWidth = 1;
+	c.fillRect(this.x, this.y + 1, this.w, this.h - 2);
+	c.fillRect(this.x + (this.dir < 0 ? 10 : this.w - 12), this.y, 2, this.h);
+	c.strokeRect(this.x - 1, this.y, this.w + 2, this.h);
+
+
+};
+
