@@ -15,4 +15,4 @@ var audio = {
 		this.osc.stop(c.currentTime);
 	}
 
-}
+};

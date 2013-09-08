@@ -140,4 +140,4 @@ Player.prototype.render = function (c) {
 	c.fillStyle = "#22f";
 	c.fillRect(this.x, this.y, this.w, this.h);
 
-}
+};

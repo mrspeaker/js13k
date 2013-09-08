@@ -71,4 +71,6 @@ var utils = {
 
 };
 
+// Polyfills
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+

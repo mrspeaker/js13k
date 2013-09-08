@@ -12,3 +12,4 @@ var BLOCKS = {
 };
 
 window.BLOCKS = BLOCKS;
+
