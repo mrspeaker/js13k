@@ -29,6 +29,7 @@ Screen.level = {
 		}
 
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
+		utils.checkCollisions([this.ghouls, this.player.traps]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 	},
 

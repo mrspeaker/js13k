@@ -24,6 +24,9 @@ Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
 		this.remove = true;
 	}
+	if (e instanceof Trap) {
+		this.remove = true;
+	}
 };
 Ghoul.prototype.tick = function () {
 	this.y += Math.sin(Date.now() / 100);

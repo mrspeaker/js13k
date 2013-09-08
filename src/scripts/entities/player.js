@@ -9,6 +9,8 @@ var Player = function() {
 	this.onLadder = false;
 	this.wasOnLadder = false;
 	this.dir = 1;
+
+	this.trapLaunch = -1;
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y) {
@@ -18,6 +20,8 @@ Player.prototype.init = function (x, y) {
 	this.initpos = [x, y];
 
 	this.projectiles = [];
+	this.traps = [];
+
 	this.offs = {
 		headX: 2,
 		headY: -3,
@@ -34,6 +38,9 @@ Player.prototype.tick = function (input, map) {
 	this.projectiles = this.projectiles.filter(function (p) {
 		return p.tick(map);
 	});
+	this.traps = this.traps.filter(function (t) {
+		return t.tick(map);
+	});
 
 	if (input.isDown("up")) {
 		if (this.inWater || (this.onLadder && !this.onTopOfLadder)) {
@@ -48,7 +55,22 @@ Player.prototype.tick = function (input, map) {
 		}
 	}
 	if (input.isDown("down")) {
-		this.acc[1] += speed;
+		if (input.isDown("fire")) {
+			if (this.trapLaunch < 0) {
+				this.trapLaunch = 20;
+			} else {
+				if (--this.trapLaunch === -1) {
+					this.trapLaunch = 1000; // TODO: just release fire button.
+					this.traps.push(
+						new Trap().init(this.x, this.y - 2 - 24)
+					);
+				}
+			}
+		} else {
+			// Move downwards
+			this.trapLaunch = -1;
+			this.acc[1] += speed;
+		}
 	}
 	if (input.isDown("left")) {
 		this.acc[0] -= speed;
@@ -154,6 +176,10 @@ Player.prototype.render = function (c) {
 
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
+	});
+
+	this.traps.forEach(function (t) {
+		return t.render(c);
 	});
 
 	// c.fillStyle = "hsl(0, 0%, 100%)";

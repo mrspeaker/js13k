@@ -4,7 +4,6 @@ var Spear = function (){
 	this.speed = 8;
 	this.dir = -1;
 	this.life = 200;
-	this.falling = false;
 	this.remove = false;
 	this.stuck = false;
 	this.x = 0;
