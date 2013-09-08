@@ -39,12 +39,12 @@ var GEN = {
 							color = 0x715137;
 							break;
 						case 6:
-							color = 0x6a6a6a;
+							color = 0x7f7f7f;
 							break;
 						case 1:
-							color = 0xe1c479;
-							if ((x + (y >> 2) * 4) % 8 == 0 || y % 4 == 0) {
-                        		color = 0x513117;
+							color = Math.random() < 0.15 ? 0x50D937 : -1;
+							if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
+                        		color = 0xe1c479;
                     		}
 							break;
 						case 2:
@@ -54,14 +54,22 @@ var GEN = {
 							break;
 					}
 
-					var col = (((color >> 16) & 0xff) * brr / 255) << 16
-                        | (((color >> 8) & 0xff) * brr / 255) << 8
-                        | (((color) & 0xff) * brr / 255);
+                    if (color == -1) {
+                    	pixels.data[off + 0] = 0;
+	      				pixels.data[off + 1] = 0;
+	      				pixels.data[off + 2] = 0;
+	      				pixels.data[off + 3] = 0;
 
-					pixels.data[off + 0] = (col >> 16) & 0xff;
-      				pixels.data[off + 1] = (col >> 8) & 0xff;
-      				pixels.data[off + 2] = col & 0xff;
-      				pixels.data[off + 3] = 255;
+                    } else {
+						var col = (((color >> 16) & 0xff) * brr / 255) << 16
+		                    | (((color >> 8) & 0xff) * brr / 255) << 8
+		                    | (((color) & 0xff) * brr / 255);
+
+						pixels.data[off + 0] = (col >> 16) & 0xff;
+	      				pixels.data[off + 1] = (col >> 8) & 0xff;
+	      				pixels.data[off + 2] = col & 0xff;
+	      				pixels.data[off + 3] = 255;
+	      			}
 
 				}
 

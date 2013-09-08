@@ -20,6 +20,7 @@ var game = {
 
 	createCanvas: function () {
 		var can = document.createElement("canvas");
+		can.setAttribute("id", "board");
 		can.setAttribute("width", 720);
 		can.setAttribute("height", 405);
 		document.body.appendChild(can);
@@ -43,7 +44,7 @@ var game = {
 	},
 
 	reset: function () {
-		this.setScreen(Screen.title);
+		this.setScreen(Screen.level);
 	},
 
 	run: function (d) {

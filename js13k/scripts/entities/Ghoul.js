@@ -3,3 +3,6 @@ var Ghoul = function () {
 	this.h = 22;
 };
 Ghoul.prototype = new Entity;
+Ghoul.prototype.hit = function () {
+	this.remove = true;
+};

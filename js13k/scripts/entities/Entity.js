@@ -14,7 +14,7 @@ Entity.prototype = {
 	},
 	hit: function () {},
 	hitBlocks: function () {},
-	tick: function () {},
+	tick: function () { return !(this.remove); },
 	move: function (x, y, map) {
 
 		// Temp holder for movement
