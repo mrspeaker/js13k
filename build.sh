@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # Concats the library into Ω500.js
-
-echo "concatting"
-
+echo
+echo "...concatting..."
 header=$(cat << EOF
 /*
 	js13k game by Mr Speaker
@@ -33,5 +32,30 @@ src/scripts/game.js \
 \
 > build/js13k.js
 
-echo "uglifying"
+echo
+echo "...uglifying..."
 uglifyjs build/js13k.js -v -c -m -o build/js13k.min.js
+
+echo
+echo "...zipping..."
+mkdir build/js13k-MrSpeaker
+cp build/js13k.min.js build/js13k-MrSpeaker
+cp build/index.html build/js13k-MrSpeaker
+cp build/README build/js13k-MrSpeaker
+cp src/css/main.css build/js13k-MrSpeaker
+
+cd build
+zip -9 js13k.zip js13k-MrSpeaker/*
+cd ../
+
+rm -rf build/js13k-MrSpeaker
+
+echo
+echo "...done..."
+bytes=$(stat -f "%z" build/js13k.zip)
+
+echo "Used: ${bytes}K"
+echo "Free: $(expr 13 \* 1024 - $bytes)K"
+echo
+
+
