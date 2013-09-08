@@ -81,7 +81,7 @@ var GEN = {
 	tiles: function (w, h) {
 
 		var tile,
-			maxTiles = 8,
+			maxTiles = 20,
 			x, y, i, pixels,
 			c,
 			can;
@@ -102,7 +102,8 @@ var GEN = {
 					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
 
 					var color = 0xff00ff,
-						brr = 255;
+						brr = 255,
+						siny;
 
 					brr = 255 - ((Math.random() * 96) | 0);
 					switch (tile) {
@@ -130,11 +131,22 @@ var GEN = {
 						case 3:
 						case 4:
 							color = 0x4b83c3;
-							var siny = y % 12 - ((tile-2)*4);
+							siny = y % 12 - ((tile-2)*4);
 							if (siny < 0) siny += 12;
 							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
 								color = 0xffffff;
 							}
+							break;
+						case 8:
+						case 9:
+						case 10:
+							color = 0xfe9b00;
+							siny = y % 4 - (tile - 8);
+							if (siny < 0) siny += 4;
+							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
+								color = 0xe12900;
+							}
+							brr = Math.min(255, brr * 1.4);
 							break;
 					}
 
@@ -191,7 +203,15 @@ var GEN = {
 			"jump": function() {
 				var now = c.currentTime;
 				var o = c.createOscillator();
-				o.connect(audio.master);
+				var f = c.createBiquadFilter();
+
+				o.connect(f);
+				f.connect(audio.master);
+
+				f.frequency.value = 300;
+				f.Q.value = 8;
+
+
 				o.type = "square"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(200, 0);
@@ -205,10 +225,23 @@ var GEN = {
 			this.master = c.createGain();
 			this.master.gain.value = 0.5;
 			this.master.connect(c.destination);
+
+			this.createTune();
 		},
 
 		stop: function () {
 			this.osc.stop(c.currentTime);
+		},
+
+		createTune: function () {
+			return;
+			for (var bar = 0; bar < 2; bar++) {
+			  var time = startTime + bar * 8 * eighthNoteTime;
+
+			  for (var i = 0; i < 8; ++i) {
+			    playSound(hihat, time + i * eighthNoteTime);
+			  }
+			}
 		}
 
 };
@@ -223,7 +256,8 @@ var BLOCKS = {
 		LADDER: 1,
 		WATER: 2,
 		WATERRIGHT: 3,
-		WATERLEFT: 4
+		WATERLEFT: 4,
+		LAVA: 8
 	}
 
 };
@@ -271,21 +305,21 @@ var Map = {
 			[ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
 			[ 7, 0, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 1, 7, 7, 7, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 7],
 			[ 7, 0, 0, 7, 7, 7, 7, 7, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 7, 7, 7, 7, 7],
-			[ 0, 5, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7],
-			[ 5, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 5, 7, 7],
-			[ 7, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7],
-			[ 7, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7],
-			[ 7, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 5, 7, 7, 7, 2, 7, 7],
+			[ 8, 5, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7],
+			[ 5, 8, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 5, 7, 7],
+			[ 7, 8, 8, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7],
+			[ 7, 8, 8, 8, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7],
+			[ 7, 0, 8, 8, 8, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 5, 7, 7, 7, 2, 7, 7],
 			[ 7, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 1, 5, 5, 5, 5, 5, 7, 7, 2, 4, 4, 7, 7],
 			[ 7, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 7, 7],
 			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 7],
 			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 0, 0, 5],
-			[ 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 8],
+			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 8, 8, 5],
+			[ 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7],
+			[ 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7],
+			[ 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
 			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7]
 		];
 		this.walkable = BLOCKS.walkable;
@@ -363,6 +397,10 @@ var Map = {
 				if (cell >= 2 && cell <= 4) {
 					cell = ((Date.now() / 200) % 3 | 0) + 2;
 				}
+				// flowin' lava
+				if (cell >= 8 && cell <= 10) {
+					cell = ((Date.now() / 400) % 3 | 0) + 8;
+				}
 
 				this.sheet.render(
 					c,
@@ -425,7 +463,6 @@ Entity.prototype = {
 
 		// if overlapping edges, move back a little
 		if (y < 0 && (yBlocks[0] > map.walkable || yBlocks[2] > map.walkable)) {
-			// Hmmm... why only this guy needs to be floored?
 			yo = map.getBlockEdge((yv | 0) + map.sheet.h, "VERT") - this.y;
 			hitY = true;
 		}
@@ -490,12 +527,61 @@ Entity.prototype = {
 var Ghoul = function () {
 	this.w = 15;
 	this.h = 22;
+	this.dir = 1;
+	this.speed = 3;
 };
 Ghoul.prototype = new Entity;
+Ghoul.prototype.init = function (x, y, dir) {
+	this.x = x;
+	this.y = y;
+
+	this.dir = dir || 1;
+
+	this.offs = {
+		headX: 2,
+		headY: -3,
+		bodyX: 0,
+		bodyY: 5
+	}
+
+	return this;
+},
 Ghoul.prototype.hit = function () {
 	this.remove = true;
 };
-var Player = function() {
+Ghoul.prototype.tick = function () {
+	this.y += Math.sin(Date.now() / 100);
+	this.x += this.speed * this.dir;
+
+	if (this.x < 0 || this.x > game.ctx.w) {
+		//this.remove = true;
+		this.dir *= -1;
+	}
+	return !(this.remove);
+};
+Ghoul.prototype.render = function (c) {
+
+	c.strokeStyle = "hsl(70, 100%, 50%)";
+
+	c.shadowColor =  "hsl(70, 100%, 50%)";
+    c.shadowOffsetX = 0;
+    c.shadowOffsetY = 0;
+    c.shadowBlur    = 2;
+
+	c.fillStyle = "hsl(280, 20%, 50%)";
+	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+
+	c.fillStyle = "hsl(120, 30%, 40%)";
+	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	//c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+
+	c.fillStyle = "hsl(120, 40%, 50%)";
+	c.fillRect(this.x + 2, this.y +20, 8, 3);
+
+	c.fillRect(this.x + 4, this.y + 11, 3, 5);
+
+};var Player = function() {
 	this.w = 12;
 	this.h = 23;
 	this.vel = [0, 0];
@@ -512,7 +598,15 @@ Player.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
+	this.initpos = [x, y];
+
 	this.projectiles = [];
+	this.offs = {
+		headX: 2,
+		headY: -3,
+		bodyX: 0,
+		bodyY: 5
+	}
 
 	return this;
 },
@@ -586,7 +680,15 @@ Player.prototype.hitSpear = function (spear) {
 		this.onTopOfLadder = false;
 	}
 };
+Player.prototype.hitBlocks = function (x, y) {
 
+
+	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
+		this.x = this.initpos[0];
+		this.y = this.initpos[1];
+	}
+
+};
 Player.prototype.checkBlocks = function (map) {
 
 	this.wasOnLadder = this.onLadder;
@@ -622,21 +724,38 @@ Player.prototype.checkBlocks = function (map) {
 	if (blocks.indexOf(BLOCKS.type.WATERRIGHT) > -1) {
 		this.xo += 4;
 		this.inWater = true;
-		//this.falling = false;
 	}
 	if (blocks.indexOf(BLOCKS.type.WATERLEFT) > -1) {
 		this.xo -= 4;
 		this.inWater = true;
-		//this.falling = false;
 	}
 
 };
 Player.prototype.render = function (c) {
+
+	c.shadowBlur = 0;
+
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
 	});
-	c.fillStyle = "#22f";
-	c.fillRect(this.x, this.y, this.w, this.h);
+
+	// c.fillStyle = "hsl(0, 0%, 100%)";
+	// c.fillRect(this.x, this.y, this.w, this.h);
+
+	c.strokeStyle = "#000";
+
+	c.fillStyle = "hsl(10, 70%, 30%)";
+	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+
+	c.fillStyle = "hsl(20, 30%, 40%)";
+	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+
+	c.fillStyle = "hsl(50, 40%, 50%)";
+	c.fillRect(this.x + 2, this.y +20, 8, 3);
+
+	c.fillRect(this.x + 4, this.y + 11, 3, 5);
 
 };
 var Spear = function (){
@@ -684,6 +803,17 @@ Spear.prototype.hit = function (e) {
 		this.stuck = true;
 	}
 };
+Spear.prototype.render = function (c) {
+	c.fillStyle = "#ff0";
+	c.strokeStyle = "#000";
+	c.lineWidth = 1;
+	c.fillRect(this.x, this.y + 1, this.w, this.h - 2);
+	c.fillRect(this.x + (this.dir < 0 ? 10 : this.w - 12), this.y, 2, this.h);
+	c.strokeRect(this.x - 1, this.y, this.w + 2, this.h);
+
+
+};
+
 var Camera = {
 	x: 0,
 	y: 0,
@@ -837,7 +967,7 @@ Screen.level = {
 		this.map = Map.init(tiles, this.camera);
 
 		this.ghouls = [
-			new Ghoul().init(200, 280)
+			new Ghoul().init(200, 285)
 		];
 
 		return this;
@@ -850,25 +980,26 @@ Screen.level = {
 			return g.tick();
 		});
 
+		if (Math.random() < 0.01) {
+			this.ghouls.push(
+				new Ghoul().init(5, [100, 280, 420][Math.random() * 3 | 0], 1)
+			)
+		}
+
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 	},
 
 	render: function (c) {
 
-		//c.fillStyle = "#000";
 		c.clearRect(0, 0, c.w, c.h);
 
-		var grd = c.createLinearGradient(0, 0, 0, c.h);
-	      // light blue
-	      grd.addColorStop(0, 'hsl(30, 50%, 25%)');
-	      // dark blue
-	      grd.addColorStop(1, 'hsl(20, 50%, 00%)');
-	      c.fillStyle = grd;
-	   //   c.fillRect(0, 0, c.w, c.h);
+		// var grd = c.createLinearGradient(0, 0, 0, c.h);
+		// grd.addColorStop(0, 'hsl(30, 50%, 25%)');
+		// grd.addColorStop(1, 'hsl(20, 50%, 00%)');
+		// c.fillStyle = grd;
 
-
-		c.fillStyle = "#888";
+		c.fillStyle = "#550";
 		c.font = "10pt monospace";
 		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
 

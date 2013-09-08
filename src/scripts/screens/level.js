@@ -22,9 +22,9 @@ Screen.level = {
 			return g.tick();
 		});
 
-		if (Math.random() < 0.01) {
+		if (Math.random() < 0.01 && this.ghouls.length < 15) {
 			this.ghouls.push(
-				new Ghoul().init(5, [100, 280, 420][Math.random() * 3 | 0], 1)
+				new Ghoul().init(5, [110, 280, 420][Math.random() * 3 | 0], 1)
 			)
 		}
 

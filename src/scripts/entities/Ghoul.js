@@ -20,8 +20,10 @@ Ghoul.prototype.init = function (x, y, dir) {
 
 	return this;
 },
-Ghoul.prototype.hit = function () {
-	this.remove = true;
+Ghoul.prototype.hit = function (e) {
+	if (e instanceof Spear && !e.stuck) {
+		this.remove = true;
+	}
 };
 Ghoul.prototype.tick = function () {
 	this.y += Math.sin(Date.now() / 100);
@@ -40,9 +42,9 @@ Ghoul.prototype.render = function (c) {
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
     c.shadowOffsetY = 0;
-    c.shadowBlur    = 2;
+    c.shadowBlur    = 10;
 
-	c.fillStyle = "hsl(280, 20%, 50%)";
+	c.fillStyle = "hsl(180, 80%, 50%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 

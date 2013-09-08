@@ -44,7 +44,7 @@ Spear.prototype.hit = function (e) {
 	}
 };
 Spear.prototype.render = function (c) {
-	c.fillStyle = "#ff0";
+	c.fillStyle = "hsl(55, 100%, 50%)";
 	c.strokeStyle = "#000";
 	c.lineWidth = 1;
 	c.fillRect(this.x, this.y + 1, this.w, this.h - 2);

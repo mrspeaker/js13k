@@ -169,7 +169,7 @@ Player.prototype.render = function (c) {
 	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
-	c.fillStyle = "hsl(50, 40%, 50%)";
+	c.fillStyle = "hsl(55, 100%, 50%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
 
 	c.fillRect(this.x + 4, this.y + 11, 3, 5);
