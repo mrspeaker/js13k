@@ -46,7 +46,6 @@ Entity.prototype = {
 
 		// if overlapping edges, move back a little
 		if (y < 0 && (yBlocks[0] > map.walkable || yBlocks[2] > map.walkable)) {
-			// Hmmm... why only this guy needs to be floored?
 			yo = map.getBlockEdge((yv | 0) + map.sheet.h, "VERT") - this.y;
 			hitY = true;
 		}

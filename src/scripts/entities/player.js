@@ -91,7 +91,15 @@ Player.prototype.hitSpear = function (spear) {
 		this.onTopOfLadder = false;
 	}
 };
+Player.prototype.hitBlocks = function (x, y) {
 
+
+	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
+		this.x = this.initpos[0];
+		this.y = this.initpos[1];
+	}
+
+};
 Player.prototype.checkBlocks = function (map) {
 
 	this.wasOnLadder = this.onLadder;
@@ -131,10 +139,6 @@ Player.prototype.checkBlocks = function (map) {
 	if (blocks.indexOf(BLOCKS.type.WATERLEFT) > -1) {
 		this.xo -= 4;
 		this.inWater = true;
-	}
-	if (blocks.indexOf(BLOCKS.type.LAVA) > -1) {
-		this.x = this.initpos[0];
-		this.y = this.initpos[1];
 	}
 
 };
