@@ -105,6 +105,11 @@ var Map = {
 					continue;
 				}
 
+				// flowin' water
+				if (cell >= 2 && cell <= 4) {
+					cell = ((Date.now() / 200) % 3 | 0) + 2;
+				}
+
 				this.sheet.render(
 					c,
 					cell % cellW  | 0,

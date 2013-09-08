@@ -51,7 +51,9 @@ var GEN = {
 						case 3:
 						case 4:
 							color = 0x4b83c3;
-							if ((Math.sin(x) * 2.5 | 0) === (y % 12 | 0) -3) {
+							var siny = y % 12 - ((tile-2)*4);
+							if (siny < 0) siny += 12;
+							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
 								color = 0xffffff;
 							}
 							break;
