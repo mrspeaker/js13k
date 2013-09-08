@@ -54,8 +54,8 @@ echo
 echo "...done..."
 bytes=$(stat -f "%z" build/js13k.zip)
 
-echo "Used: ${bytes}K"
-echo "Free: $(expr 13 \* 1024 - $bytes)K"
+echo "Used: ${bytes} bytes"
+echo "Free: $(expr 13 \* 1024 - $bytes) bytes"
 echo
 
 

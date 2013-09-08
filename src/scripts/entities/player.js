@@ -32,6 +32,7 @@ Player.prototype.tick = function (input, map) {
 			this.acc[1] -= speed;
 		} else {
 			if (!this.falling) {
+				audio.sfx.jump();
 				this.acc[1] = -map.sheet.h - 1;
 				this.vel[1] = 0;
 				this.falling = true

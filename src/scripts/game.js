@@ -9,6 +9,7 @@ var game = {
 		this.res = {
 			"tiles": GEN.tiles(this.tw, this.th)
 		}
+		audio.init();
 		this.input = Input.init();
 		this.reset();
 		this.run();
