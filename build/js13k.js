@@ -236,18 +236,22 @@ var GEN = {
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
+				var g = c.createGain();
 				o.connect(f);
-				f.connect(audio.master);
-				f.frequency.value = 1000;
-				f.Q.value = 8;
+				f.connect(g);
+				g.connect(audio.master);
 
+				g.gain.value = 0.15;
+				f.frequency.value = 2000;
+				f.Q.value = 10;
 
 				o.type = "square"
 				o.frequency.value = 0;
-				o.frequency.setValueAtTime(100, now);
-				o.frequency.linearRampToValueAtTime(100, now + 0.01);
+				o.frequency.setValueAtTime(300, now);
+				o.frequency.linearRampToValueAtTime(600, now + 0.1);
+
 				o.start(0);
-				o.stop(now + 0.01);
+				o.stop(now + 0.1);
 			},
 			shoot: function () {
 				var now = c.currentTime;
@@ -257,8 +261,9 @@ var GEN = {
 
 				f.connect(audio.master);
 				f.Q.value = 20;
-				f.frequency.value = 2000;
-				f.frequency.setValueAtTime(2000, now );
+				var start = Math.random() * 2000 + 500 | 0;
+				f.frequency.value = start;
+				f.frequency.setValueAtTime(start, now);
 				f.frequency.linearRampToValueAtTime(100, now + 0.02);
 
 				s.connect(f);
@@ -781,6 +786,10 @@ Player.prototype.hitSpear = function (spear) {
 		this.onTopOfLadder = false;
 	}
 };
+
+Player.prototype.isMoving = function () {
+	return Math.abs(this.vel[0]) > 0.3;
+};
 Player.prototype.hitBlocks = function (x, y) {
 
 
@@ -855,9 +864,21 @@ Player.prototype.render = function (c) {
 	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
-	c.fillRect(this.x + 2, this.y +20, 8, 3);
+	if (this.isMoving()) {
+		if ((Date.now() / 80 | 0) % 2 === 0) {
+			c.fillRect(this.x + 2, this.y +20, 3, 3);
+			c.fillRect(this.x + 8, this.y +20, 3, 3);
+			c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		} else {
+			c.fillRect(this.x + 4, this.y +20, 4, 3);
+			c.fillRect(this.x + 5, this.y + 11, 3, 5);
+		}
+	} else {
+		c.fillRect(this.x + 2, this.y +20, 3, 3);
+		c.fillRect(this.x + 8, this.y +20, 3, 3);
+		c.fillRect(this.x + 4, this.y + 11, 3, 5);
+	}
 
-	c.fillRect(this.x + 4, this.y + 11, 3, 5);
 
 };
 var Spear = function (){

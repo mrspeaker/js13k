@@ -23,10 +23,10 @@ var GEN = {
 					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
 
 					var color = 0xff00ff,
-						brr = 255,
+						br = 255,
 						siny;
 
-					brr = 255 - ((Math.random() * 96) | 0);
+					br = 255 - ((Math.random() * 96) | 0);
 					switch (tile) {
 						case 5:
 						case 11:
@@ -35,7 +35,7 @@ var GEN = {
 							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
 			                    color = 0x6AAA40;
 			                } else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
-			                    brr = brr * 2 / 3;
+			                    br = br * 2 / 3;
 			                }
 			                if (tile === 11 && x < 2 && y < 2) {
 			                	var dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
@@ -83,7 +83,7 @@ var GEN = {
 							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
 								color = 0xe12900;
 							}
-							brr = Math.min(255, brr * 1.4);
+							br = Math.min(255, br * 1.4);
 							break;
 					}
 
@@ -94,9 +94,9 @@ var GEN = {
 	      				pixels.data[off + 3] = 0;
 
                     } else {
-						var col = (((color >> 16) & 0xff) * brr / 255) << 16
-		                    | (((color >> 8) & 0xff) * brr / 255) << 8
-		                    | (((color) & 0xff) * brr / 255);
+						var col = (((color >> 16) & 0xff) * br / 255) << 16
+		                    | (((color >> 8) & 0xff) * br / 255) << 8
+		                    | (((color) & 0xff) * br / 255);
 
 						pixels.data[off + 0] = (col >> 16) & 0xff;
 	      				pixels.data[off + 1] = (col >> 8) & 0xff;
