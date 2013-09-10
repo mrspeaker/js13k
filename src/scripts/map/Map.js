@@ -13,6 +13,37 @@
 			this.sheet = sheet;
 			this.camera = camera;
 
+			this.expandRoomMap(this.generateRooms());
+			this.addPieces();
+
+			this.walkable = BLOCKS.walkable;
+			this.cellH = this.cells.length;
+			this.cellW = this.cells[0].length;
+			this.h = this.cellH * sheet.h;
+			this.w = this.cellW * sheet.w;
+
+			this.camera.setBounds(this.w, this.h);
+
+			return this;
+
+		},
+
+		generateRooms: function () {
+
+			var roomMap = [];
+
+			for (var i = 0; i < 12; i++) {
+				roomMap.push([]);
+				for (var j = 0; j < 15; j++) {
+					roomMap[i].push(Math.random() * (rooms.length) | 0);
+				}
+			}
+
+			return roomMap;
+		},
+
+		expandRoomMap: function (roomMap) {
+
 			var cells = [],
 				roomsH = roomMap.length,
 				roomsW = roomMap[0].length,
@@ -33,15 +64,20 @@
 
 			this.cells = cells;
 
-			this.walkable = BLOCKS.walkable;
-			this.cellH = this.cells.length;
-			this.cellW = this.cells[0].length;
-			this.h = this.cellH * sheet.h;
-			this.w = this.cellW * sheet.w;
+		},
 
-			this.camera.setBounds(this.w, this.h);
+		addPieces: function () {
 
-			return this;
+			this.pieces = [];
+
+			for (var i = 0; i < 30; i++) {
+
+				this.pieces.push([
+					Math.random() * this.cells.length | 0,
+					Math.random() * this.cells[0].length | 0
+				]);
+
+			}
 
 		},
 
@@ -127,21 +163,21 @@
 
 	rooms = [
 	[
-		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0],
+		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
 		[ 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[ 5, 1, 5, 5, 5, 5, 5, 5, 1, 5, 5]
 	], [
-		[ 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6],
-		[ 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 6],
-		[ 5, 8,12, 0, 0, 0, 0, 0, 0, 0, 0],
-		[ 7, 8, 8,12, 0, 0, 0, 0, 0, 0, 0],
-		[ 7, 8, 8, 8,12, 0, 0, 0, 0, 0, 0],
-		[ 7, 0, 8, 8, 8,12, 0, 0, 0, 0, 0],
-		[ 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0,12, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 5, 8,12, 0, 0, 0, 0, 0, 6, 1, 6],
+		[ 7, 8, 8,12, 0, 0, 0, 0, 0, 1, 0],
+		[ 7, 8, 8, 8,12, 0, 0, 0, 0, 1, 0],
+		[ 7, 0, 8, 8, 8,12, 0, 0, 0, 1, 0],
+		[ 0, 0, 5, 5, 5, 5, 5, 5, 5, 1, 5],
 	], [
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -159,24 +195,33 @@
 		[ 5, 1, 1, 5, 5, 7, 7, 2, 4, 4, 7],
 		[ 7, 7, 1, 7, 7, 7, 2, 2, 7, 7, 7]
 	], [
-		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
 		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[7, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
-		[7, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
+		[1, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
+		[1, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	],
+	[
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
+		[0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
+		[0, 0, 5, 5,12, 0, 0, 0, 0, 0, 7],
 		[7, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	],
+	[
+		[0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0],
+		[5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
+		[0, 0, 5, 5, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	]
 	];
-
-	roomMap = [];
-
-	for (var i = 0; i < 12; i++) {
-		roomMap.push([]);
-		for (var j = 0; j < 15; j++) {
-			roomMap[i].push(Math.random() * (rooms.length) | 0);
-		}
-	}
 
 
 }());

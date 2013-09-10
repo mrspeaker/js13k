@@ -109,7 +109,11 @@ Player.prototype.tickVelocity = function () {
 	this.xo += this.vel[0];
 	this.yo += this.vel[1];
 };
-
+Player.prototype.hit = function (e) {
+	if (e instanceof Piece) {
+		e.remove = true;
+	}
+};
 Player.prototype.hitSpear = function (spear) {
 	if (spear.stuck) {
 		this.onLadder = true;

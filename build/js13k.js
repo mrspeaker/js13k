@@ -102,10 +102,10 @@ var GEN = {
 					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
 
 					var color = 0xff00ff,
-						brr = 255,
+						br = 255,
 						siny;
 
-					brr = 255 - ((Math.random() * 96) | 0);
+					br = 255 - ((Math.random() * 96) | 0);
 					switch (tile) {
 						case 5:
 						case 11:
@@ -114,7 +114,7 @@ var GEN = {
 							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
 			                    color = 0x6AAA40;
 			                } else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
-			                    brr = brr * 2 / 3;
+			                    br = br * 2 / 3;
 			                }
 			                if (tile === 11 && x < 2 && y < 2) {
 			                	var dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
@@ -162,7 +162,7 @@ var GEN = {
 							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
 								color = 0xe12900;
 							}
-							brr = Math.min(255, brr * 1.4);
+							br = Math.min(255, br * 1.4);
 							break;
 					}
 
@@ -173,9 +173,9 @@ var GEN = {
 	      				pixels.data[off + 3] = 0;
 
                     } else {
-						var col = (((color >> 16) & 0xff) * brr / 255) << 16
-		                    | (((color >> 8) & 0xff) * brr / 255) << 8
-		                    | (((color) & 0xff) * brr / 255);
+						var col = (((color >> 16) & 0xff) * br / 255) << 16
+		                    | (((color >> 8) & 0xff) * br / 255) << 8
+		                    | (((color) & 0xff) * br / 255);
 
 						pixels.data[off + 0] = (col >> 16) & 0xff;
 	      				pixels.data[off + 1] = (col >> 8) & 0xff;
@@ -339,160 +339,234 @@ function makeSheet(img, w, h) {
 	}
 
 };
-var Map = {
+(function () {
 
-	x: 0,
-	y: 0,
+	var rooms,
+		roomMap;
 
-	init: function (sheet, camera) {
+	window.Map = {
 
-		this.sheet = sheet;
-		this.camera = camera;
+		x: 0,
+		y: 0,
 
-		this.cells = [
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 1, 5,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 1, 5,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 7, 1, 7, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 7, 1, 7, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-			[12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-			[ 7, 0, 0,11, 5, 5, 5,12, 0,11, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 1, 7, 7, 7, 5, 5, 5, 5, 5,12, 2,11, 5, 5, 5, 7, 7, 0, 0,11, 5, 5, 5,12, 0,11, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 1, 7, 7, 7, 5, 5, 5, 5, 5,12, 2,11, 5, 5, 5, 7],
-			[ 7, 0, 0, 7, 7, 7, 7, 7, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 7, 7, 7, 7, 7, 7, 0, 0, 7, 7, 7, 7, 7, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 7, 7, 7, 7, 7],
-			[ 8,12, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7, 8,12, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7],
-			[ 5, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,11, 7, 7, 5, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,11, 7, 7],
-			[ 7, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7, 7, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7],
-			[ 7, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7, 7, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7],
-			[ 7, 0, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,11, 7, 7, 7, 2, 7, 7, 7, 0, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,11, 7, 7, 7, 2, 7, 7],
-			[ 7, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 1, 5, 5, 5, 5, 5, 7, 7, 2, 4, 4, 7, 7, 7, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 1, 5, 5, 5, 5, 5, 7, 7, 2, 4, 4, 7, 7],
-			[ 7, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 7, 7, 7, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 7, 7],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 7],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 8],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 8, 8, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 8, 8, 5],
-			[ 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7, 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+		init: function (sheet, camera) {
 
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 1, 5,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 1, 5,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7],
-			[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 7, 1, 7, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 7, 1, 7, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-			[12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 1, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-			[ 7, 0, 0,11, 5, 5, 5,12, 0,11, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 1, 7, 7, 7, 5, 5, 5, 5, 5,12, 2,11, 5, 5, 5, 7, 7, 0, 0,11, 5, 5, 5,12, 0,11, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 1, 7, 7, 7, 5, 5, 5, 5, 5,12, 2,11, 5, 5, 5, 7],
-			[ 7, 0, 0, 7, 7, 7, 7, 7, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 7, 7, 7, 7, 7, 7, 0, 0, 7, 7, 7, 7, 7, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2, 7, 7, 7, 7, 7],
-			[ 8,12, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7, 8,12, 0, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7, 7],
-			[ 5, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,11, 7, 7, 5, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,11, 7, 7],
-			[ 7, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7, 7, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 2, 7, 7],
-			[ 7, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7, 7, 0, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7, 7, 7, 2, 7, 7],
-			[ 7, 0, 8, 8, 8,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,11, 7, 7, 7, 2, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,11, 7, 7, 7, 2, 7, 7],
-			[ 7, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 1, 5, 5, 5, 5, 5, 7, 7, 2, 4, 4, 7, 7, 7, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 1, 5, 5, 5, 5, 5, 7, 7, 2, 4, 4, 7, 7],
-			[ 7, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 7, 7, 7, 0, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 4, 0, 0, 7, 7],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 7],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 8, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 8],
-			[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 8, 8, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 0, 0, 8, 8, 5],
-			[ 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7, 7, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 4, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7],
-			[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7]
-		];
-		this.walkable = BLOCKS.walkable;
-		this.cellH = this.cells.length;
-		this.cellW = this.cells[0].length;
-		this.h = this.cellH * sheet.h;
-		this.w = this.cellW * sheet.w;
+			this.sheet = sheet;
+			this.camera = camera;
 
-		this.camera.setBounds(this.w, this.h);
+			this.expandRoomMap(this.generateRooms());
+			this.addPieces();
 
-		return this;
+			this.walkable = BLOCKS.walkable;
+			this.cellH = this.cells.length;
+			this.cellW = this.cells[0].length;
+			this.h = this.cellH * sheet.h;
+			this.w = this.cellW * sheet.w;
 
-	},
+			this.camera.setBounds(this.w, this.h);
 
-	tick: function (player) {
+			return this;
 
+		},
 
-	},
+		generateRooms: function () {
 
-	getBlocks: function(blocks) {
+			var roomMap = [];
 
-		return blocks.map(function (b) {
-
-			var row = b[1] / this.sheet.h | 0,
-				col = b[0] / this.sheet.w | 0;
-
-			if (row < 0 || row > this.cellH - 1) {
-				return null;
+			for (var i = 0; i < 12; i++) {
+				roomMap.push([]);
+				for (var j = 0; j < 15; j++) {
+					roomMap[i].push(Math.random() * (rooms.length) | 0);
+				}
 			}
 
-			return this.cells[row][col];
+			return roomMap;
+		},
 
-		}, this);
+		expandRoomMap: function (roomMap) {
 
-	},
+			var cells = [],
+				roomsH = roomMap.length,
+				roomsW = roomMap[0].length,
+				cellW = rooms[0][0].length,
+				cellH = rooms[0].length;
 
-	getBlockEdge: function(pos, vertical) {
+			cells = new Array(roomsH * cellH);
 
-		var snapTo = vertical ? this.sheet.h : this.sheet.w;
-
-	    return utils.snap(pos, snapTo);
-
-	},
-
-	render: function (c) {
-
-		var tw = game.tw,
-			th = game.th,
-			cellW = this.sheet.cellW,
-			cellH = this.sheet.cellH,
-			stx = this.camera.x / tw | 0,
-			sty = this.camera.y / th | 0,
-			endx = stx + (this.camera.w / tw | 0) + 1,
-			endy = sty + (this.camera.h / th | 0) + 1,
-			j,
-			i,
-			cell;
-
-
-		for (j = sty; j <= endy; j++) {
-			if (j < 0 || j > this.cellH - 1) {
-				continue;
+			for (var y = 0; y < cells.length; y++) {
+				cells[y] = new Array(roomsW * cellW);
+				for (var x = 0; x < cells[0].length; x++) {
+					var roomX = x / cellW | 0,
+						roomY = y / cellH | 0,
+						room = roomMap[roomY][roomX];
+					cells[y][x] = rooms[room][y % cellH][x % cellW];
+				}
 			}
-			for (i = stx; i <= endx; i++) {
-				if (i > this.cellW - 1) {
+
+			this.cells = cells;
+
+		},
+
+		addPieces: function () {
+
+			this.pieces = [];
+
+			for (var i = 0; i < 30; i++) {
+
+				this.pieces.push([
+					Math.random() * this.cells.length | 0,
+					Math.random() * this.cells[0].length | 0
+				]);
+
+			}
+
+		},
+
+		tick: function (player) {
+
+
+		},
+
+		getBlocks: function(blocks) {
+
+			return blocks.map(function (b) {
+
+				var row = b[1] / this.sheet.h | 0,
+					col = b[0] / this.sheet.w | 0;
+
+				if (row < 0 || row > this.cellH - 1) {
+					return null;
+				}
+
+				return this.cells[row][col];
+
+			}, this);
+
+		},
+
+		getBlockEdge: function(pos, vertical) {
+
+			var snapTo = vertical ? this.sheet.h : this.sheet.w;
+
+		    return utils.snap(pos, snapTo);
+
+		},
+
+		render: function (c) {
+
+			var tw = game.tw,
+				th = game.th,
+				cellW = this.sheet.cellW,
+				cellH = this.sheet.cellH,
+				stx = this.camera.x / tw | 0,
+				sty = this.camera.y / th | 0,
+				endx = stx + (this.camera.w / tw | 0) + 1,
+				endy = sty + (this.camera.h / th | 0) + 1,
+				j,
+				i,
+				cell;
+
+
+			for (j = sty; j <= endy; j++) {
+				if (j < 0 || j > this.cellH - 1) {
 					continue;
 				}
+				for (i = stx; i <= endx; i++) {
+					if (i > this.cellW - 1) {
+						continue;
+					}
 
-				cell = this.cells[j][i];
-				if (cell === 0) {
-					continue;
-				}
+					cell = this.cells[j][i];
+					if (cell === 0) {
+						continue;
+					}
 
-				// flowin' water
-				if (cell >= 2 && cell <= 4) {
-					cell = ((Date.now() / 200) % 3 | 0) + 2;
-				}
-				// flowin' lava
-				if (cell >= 8 && cell <= 10) {
-					cell = ((Date.now() / 400) % 3 | 0) + 8;
-				}
+					// flowin' water
+					if (cell >= 2 && cell <= 4) {
+						cell = ((Date.now() / 200) % 3 | 0) + 2;
+					}
+					// flowin' lava
+					if (cell >= 8 && cell <= 10) {
+						cell = ((Date.now() / 400) % 3 | 0) + 8;
+					}
 
-				this.sheet.render(
-					c,
-					cell % cellW  | 0,
-					cell / cellW | 0,
-					i * tw,
-					j * th);
+					this.sheet.render(
+						c,
+						cell % cellW  | 0,
+						cell / cellW | 0,
+						i * tw,
+						j * th);
+				}
 			}
-		}
+
+		},
+	};
+
+	rooms = [
+	[
+		[ 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0],
+		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
+		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+		[ 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 5, 1, 5, 5, 5, 5, 5, 5, 1, 5, 5]
+	], [
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0,12, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 5, 8,12, 0, 0, 0, 0, 0, 6, 1, 6],
+		[ 7, 8, 8,12, 0, 0, 0, 0, 0, 1, 0],
+		[ 7, 8, 8, 8,12, 0, 0, 0, 0, 1, 0],
+		[ 7, 0, 8, 8, 8,12, 0, 0, 0, 1, 0],
+		[ 0, 0, 5, 5, 5, 5, 5, 5, 5, 1, 5],
+	], [
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[ 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1],
+		[ 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0],
+		[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1]
+	], [
+		[ 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7],
+		[ 0, 0, 0, 0, 0, 0, 2, 0, 0,11, 7],
+		[ 6, 1, 1, 0, 0, 0, 3, 3, 3, 2, 7],
+		[ 0, 1, 1, 0, 0, 0, 7, 7, 7, 2, 7],
+		[ 0, 1, 1, 0, 0,11, 7, 7, 7, 2, 7],
+		[ 5, 1, 1, 5, 5, 7, 7, 2, 4, 4, 7],
+		[ 7, 7, 1, 7, 7, 7, 2, 2, 7, 7, 7]
+	], [
+		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[7, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
+		[1, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
+		[1, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	],
+	[
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
+		[0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
+		[0, 0, 5, 5,12, 0, 0, 0, 0, 0, 7],
+		[7, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	],
+	[
+		[0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0],
+		[5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
+		[0, 0, 5, 5, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	]
+	];
 
 
+}());
 
-	}
-};
 var Entity = function () {
 	this.w = 10;
 	this.h = 10;
@@ -585,7 +659,8 @@ Entity.prototype = {
 
 		this.wasFalling = this.falling;
 		if (yBlocks[0] <= map.walkable && yBlocks[1] <= map.walkable) {
-			this.falling = true;
+			if (!this.onLadder) this.falling = true;
+			else this.falling = false;
 		} else {
 			this.falling = false;
 		}
@@ -672,6 +747,7 @@ Ghoul.prototype.render = function (c) {
 	this.grav = 0;
 	this.friction = 0.75;
 	this.falling = true;
+	this.wasFalling = false;
 	this.onLadder = false;
 	this.wasOnLadder = false;
 	this.dir = 1;
@@ -712,11 +788,11 @@ Player.prototype.tick = function (input, map) {
 		if (this.inWater || (this.onLadder && !this.onTopOfLadder)) {
 			this.acc[1] -= speed;
 		} else {
-			if (!this.falling) {
+			if (!this.falling && !this.wasFalling) {
 				audio.sfx.jump();
 				this.acc[1] = -map.sheet.h - 1;
 				this.vel[1] = 0;
-				this.falling = true
+				this.falling = true;
 			}
 		}
 	}
@@ -754,9 +830,10 @@ Player.prototype.tick = function (input, map) {
 	}
 
 	this.tickVelocity();
-	this.move(this.xo, this.yo, map);
 
-	this.checkBlocks(map);
+	this.wasFalling = this.falling;
+	this.move(this.xo, this.yo, map);
+	this.checkBlocks(input, map);
 
 };
 
@@ -773,7 +850,11 @@ Player.prototype.tickVelocity = function () {
 	this.xo += this.vel[0];
 	this.yo += this.vel[1];
 };
-
+Player.prototype.hit = function (e) {
+	if (e instanceof Piece) {
+		e.remove = true;
+	}
+};
 Player.prototype.hitSpear = function (spear) {
 	if (spear.stuck) {
 		this.onLadder = true;
@@ -788,10 +869,9 @@ Player.prototype.hitSpear = function (spear) {
 };
 
 Player.prototype.isMoving = function () {
-	return Math.abs(this.vel[0]) > 0.3;
+	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
 };
 Player.prototype.hitBlocks = function (x, y) {
-
 
 	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
 		this.x = this.initpos[0];
@@ -799,7 +879,7 @@ Player.prototype.hitBlocks = function (x, y) {
 	}
 
 };
-Player.prototype.checkBlocks = function (map) {
+Player.prototype.checkBlocks = function (input, map) {
 
 	this.wasOnLadder = this.onLadder;
 
@@ -817,6 +897,9 @@ Player.prototype.checkBlocks = function (map) {
 				// Snap to top.
 				this.y = utils.snap(this.y, map.sheet.h) + (map.sheet.h - this.h);
 				this.onTopOfLadder = true;
+				if (!input.isDown("down")) {
+					this.vel[1] = 0;
+				}
 			}
 		}
 		this.onLadder = true;
@@ -855,28 +938,67 @@ Player.prototype.render = function (c) {
 
 	c.strokeStyle = "#000";
 
+	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
 	c.fillStyle = "hsl(20, 30%, 40%)";
-	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	if (!this.onLadder) {
+		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	} else {
+		c.fillRect(this.x + 3, this.y + this.offs.headY, 6, 10);
+		c.strokeRect(this.x + 3, this.y + this.offs.headY, 6, 10);
+	}
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
 	if (this.isMoving()) {
-		if ((Date.now() / 80 | 0) % 2 === 0) {
-			c.fillRect(this.x + 2, this.y +20, 3, 3);
-			c.fillRect(this.x + 8, this.y +20, 3, 3);
-			c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		if ((Date.now() / 100 | 0) % 2 === 0) {
+			// legs and arms
+			if (!this.onLadder) {
+				c.fillRect(this.x + 2, this.y + 20, 3, 3);
+				c.fillRect(this.x + 8, this.y + 20, 3, 3);
+				c.fillRect(this.x + 4, this.y + 11, 3, 5);
+			} else {
+				// Arms
+				c.fillRect(this.x - 2, this.y + 2, 3, 5);
+				c.fillRect(this.x + 11, this.y + 8, 3, 5);
+
+				// Legs
+				c.fillRect(this.x + 2, this.y + 20, 3, 2);
+				c.fillRect(this.x + 8, this.y + 20, 3, 4);
+
+			}
 		} else {
-			c.fillRect(this.x + 4, this.y +20, 4, 3);
-			c.fillRect(this.x + 5, this.y + 11, 3, 5);
+			if (!this.onLadder) {
+				c.fillRect(this.x + 4, this.y + 20, 4, 3);
+				c.fillRect(this.x + 5, this.y + 11, 3, 5);
+			} else {
+				// Arms
+				c.fillRect(this.x - 2, this.y + 8, 3, 5);
+				c.fillRect(this.x + 11, this.y + 2, 3, 5);
+
+				// Legs
+				c.fillRect(this.x + 2, this.y + 20, 3, 4);
+				c.fillRect(this.x + 8, this.y + 20, 3, 2);
+			}
 		}
 	} else {
-		c.fillRect(this.x + 2, this.y +20, 3, 3);
-		c.fillRect(this.x + 8, this.y +20, 3, 3);
-		c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		// Standing still.
+		if (!this.onLadder || this.wasFalling) {
+			c.fillRect(this.x + 2, this.y + 20, 3, 3);
+			c.fillRect(this.x + 8, this.y + 20, 3, 3);
+			c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		} else {
+			// Arms
+			c.fillRect(this.x - 2, this.y + 8, 3, 5);
+			c.fillRect(this.x + 11, this.y + 2, 3, 5);
+
+			// Legs
+			c.fillRect(this.x + 2, this.y + 20, 3, 4);
+			c.fillRect(this.x + 8, this.y + 20, 3, 2);
+		}
 	}
 
 
@@ -933,6 +1055,36 @@ Spear.prototype.render = function (c) {
 	c.fillRect(this.x + (this.dir < 0 ? 10 : this.w - 12), this.y, 2, this.h);
 	c.strokeRect(this.x - 1, this.y, this.w + 2, this.h);
 
+
+};
+
+var Piece = function (){
+	this.w = 20;
+	this.h = 24;
+};
+Piece.prototype = new Entity;
+Piece.prototype.init = function (x, y) {
+	this.x = x;
+	this.y = y;
+
+	return this;
+}
+Piece.prototype.tick = function (map) {
+	return !(this.remove);
+};
+Piece.prototype.hit = function (e) {
+
+	if (e instanceof Player) {
+	}
+
+};
+Piece.prototype.render = function (c) {
+	c.strokeStyle = "#000";
+	c.fillStyle = "#a00";
+	c.beginPath();
+	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
+	c.fill();
+	c.stroke();
 
 };
 
@@ -1088,6 +1240,10 @@ Screen.level = {
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
+		this.pieces = this.map.pieces.map(function (p) {
+			return new Piece().init(p[0] * game.tw, p[1] * game.th)
+		});
+
 		this.ghouls = [
 			new Ghoul().init(200, 285)
 		];
@@ -1101,6 +1257,9 @@ Screen.level = {
 		this.ghouls = this.ghouls.filter(function (g) {
 			return g.tick();
 		});
+		this.pieces = this.pieces.filter(function (p) {
+			return p.tick();
+		});
 
 		if (Math.random() < 0.01 && this.ghouls.length < 15) {
 			this.ghouls.push(
@@ -1111,6 +1270,7 @@ Screen.level = {
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
 		utils.checkCollisions([this.ghouls, this.player.traps]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+		utils.checkCollision(this.player, this.pieces);
 	},
 
 	render: function (c) {
@@ -1126,7 +1286,7 @@ Screen.level = {
 		c.font = "10pt monospace";
 		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
 
-		this.camera.render(c, [this.map, this.ghouls, this.player]);
+		this.camera.render(c, [this.map, this.pieces, this.ghouls, this.player]);
 
 	}
 };

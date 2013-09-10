@@ -8,6 +8,10 @@ Screen.level = {
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
+		this.pieces = this.map.pieces.map(function (p) {
+			return new Piece().init(p[0] * game.tw, p[1] * game.th)
+		});
+
 		this.ghouls = [
 			new Ghoul().init(200, 285)
 		];
@@ -21,6 +25,9 @@ Screen.level = {
 		this.ghouls = this.ghouls.filter(function (g) {
 			return g.tick();
 		});
+		this.pieces = this.pieces.filter(function (p) {
+			return p.tick();
+		});
 
 		if (Math.random() < 0.01 && this.ghouls.length < 15) {
 			this.ghouls.push(
@@ -31,6 +38,7 @@ Screen.level = {
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
 		utils.checkCollisions([this.ghouls, this.player.traps]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+		utils.checkCollision(this.player, this.pieces);
 	},
 
 	render: function (c) {
@@ -46,7 +54,7 @@ Screen.level = {
 		c.font = "10pt monospace";
 		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
 
-		this.camera.render(c, [this.map, this.ghouls, this.player]);
+		this.camera.render(c, [this.map, this.pieces, this.ghouls, this.player]);
 
 	}
 };

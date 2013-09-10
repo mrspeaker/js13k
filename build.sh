@@ -24,6 +24,7 @@ src/scripts/entities/Entity.js \
 src/scripts/entities/Ghoul.js \
 src/scripts/entities/Player.js \
 src/scripts/entities/Spear.js \
+src/scripts/entities/Piece.js \
 src/scripts/Camera.js \
 src/scripts/screens/title.js \
 src/scripts/screens/level.js \
