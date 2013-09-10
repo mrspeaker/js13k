@@ -122,7 +122,7 @@ Player.prototype.hitSpear = function (spear) {
 };
 
 Player.prototype.isMoving = function () {
-	return Math.abs(this.vel[0]) > 0.3;
+	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
 };
 Player.prototype.hitBlocks = function (x, y) {
 
@@ -189,28 +189,67 @@ Player.prototype.render = function (c) {
 
 	c.strokeStyle = "#000";
 
+	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
 	c.fillStyle = "hsl(20, 30%, 40%)";
-	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	if (!this.onLadder) {
+		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	} else {
+		c.fillRect(this.x + 3, this.y + this.offs.headY, 6, 10);
+		c.strokeRect(this.x + 3, this.y + this.offs.headY, 6, 10);
+	}
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
 	if (this.isMoving()) {
-		if ((Date.now() / 80 | 0) % 2 === 0) {
-			c.fillRect(this.x + 2, this.y +20, 3, 3);
-			c.fillRect(this.x + 8, this.y +20, 3, 3);
-			c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		if ((Date.now() / 100 | 0) % 2 === 0) {
+			// legs and arms
+			if (!this.onLadder) {
+				c.fillRect(this.x + 2, this.y + 20, 3, 3);
+				c.fillRect(this.x + 8, this.y + 20, 3, 3);
+				c.fillRect(this.x + 4, this.y + 11, 3, 5);
+			} else {
+				// Arms
+				c.fillRect(this.x - 2, this.y + 2, 3, 5);
+				c.fillRect(this.x + 11, this.y + 8, 3, 5);
+
+				// Legs
+				c.fillRect(this.x + 2, this.y + 20, 3, 2);
+				c.fillRect(this.x + 8, this.y + 20, 3, 4);
+
+			}
 		} else {
-			c.fillRect(this.x + 4, this.y +20, 4, 3);
-			c.fillRect(this.x + 5, this.y + 11, 3, 5);
+			if (!this.onLadder) {
+				c.fillRect(this.x + 4, this.y + 20, 4, 3);
+				c.fillRect(this.x + 5, this.y + 11, 3, 5);
+			} else {
+				// Arms
+				c.fillRect(this.x - 2, this.y + 8, 3, 5);
+				c.fillRect(this.x + 11, this.y + 2, 3, 5);
+
+				// Legs
+				c.fillRect(this.x + 2, this.y + 20, 3, 4);
+				c.fillRect(this.x + 8, this.y + 20, 3, 2);
+			}
 		}
 	} else {
-		c.fillRect(this.x + 2, this.y +20, 3, 3);
-		c.fillRect(this.x + 8, this.y +20, 3, 3);
-		c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		// Standing still.
+		if (!this.onLadder) {
+			c.fillRect(this.x + 2, this.y + 20, 3, 3);
+			c.fillRect(this.x + 8, this.y + 20, 3, 3);
+			c.fillRect(this.x + 4, this.y + 11, 3, 5);
+		} else {
+			// Arms
+			c.fillRect(this.x - 2, this.y + 8, 3, 5);
+			c.fillRect(this.x + 11, this.y + 2, 3, 5);
+
+			// Legs
+			c.fillRect(this.x + 2, this.y + 20, 3, 4);
+			c.fillRect(this.x + 8, this.y + 20, 3, 2);
+		}
 	}
 
 
