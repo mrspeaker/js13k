@@ -8,9 +8,10 @@ Screen.level = {
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
-		this.pieces = this.map.pieces.map(function (p) {
-			return new Piece().init(p[0] * game.tw, p[1] * game.th)
+		this.pickups = this.map.pickups.map(function (p) {
+			return new Pickup().init(p[0] * game.tw, p[1] * game.th)
 		});
+		this.pieces = [];
 
 		this.ghouls = [
 			new Ghoul().init(200, 285)
@@ -24,6 +25,9 @@ Screen.level = {
 		this.player.tick(input, this.map);
 		this.ghouls = this.ghouls.filter(function (g) {
 			return g.tick();
+		});
+		this.pickups = this.pickups.filter(function (p) {
+			return p.tick();
 		});
 		this.pieces = this.pieces.filter(function (p) {
 			return p.tick();
@@ -39,22 +43,22 @@ Screen.level = {
 		utils.checkCollisions([this.ghouls, this.player.traps]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 		utils.checkCollision(this.player, this.pieces);
+		utils.checkCollision(this.player, this.pickups);
 	},
 
 	render: function (c) {
 
 		c.clearRect(0, 0, c.w, c.h);
 
-		// var grd = c.createLinearGradient(0, 0, 0, c.h);
-		// grd.addColorStop(0, 'hsl(30, 50%, 25%)');
-		// grd.addColorStop(1, 'hsl(20, 50%, 00%)');
-		// c.fillStyle = grd;
+		this.camera.render(c, [
+			this.map,
+			this.pickups,
+			this.pieces,
+			this.ghouls,
+			this.player
+		]);
 
-		c.fillStyle = "#550";
-		c.font = "10pt monospace";
-		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
-
-		this.camera.render(c, [this.map, this.pieces, this.ghouls, this.player]);
+		game.res.font(c, "TRAPS: " + this.player.numTraps, 20, 20)
 
 	}
 };

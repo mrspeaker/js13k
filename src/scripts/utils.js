@@ -67,6 +67,21 @@ var utils = {
 				}
 			}
 		}
+	},
+
+	createCanvas: function (w, h, id) {
+		var can = document.createElement("canvas"),
+			ctx = can.getContext("2d");
+		ctx.imageSmoothingEnabled = false;
+		ctx.mozImageSmoothingEnabled = false;
+		ctx.webkitImageSmoothingEnabled = false;
+		ctx.w = w;
+		ctx.h = h;
+		can.setAttribute("height", h);
+		can.setAttribute("width", w);
+		id && can.setAttribute("id", id);
+
+		return ctx;
 	}
 
 };

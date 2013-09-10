@@ -11,6 +11,9 @@ var Player = function() {
 	this.wasOnLadder = false;
 	this.dir = 1;
 
+	this.numPickups = 0;
+	this.numTraps = 0;
+
 	this.trapLaunch = -1;
 };
 Player.prototype = new Entity;
@@ -56,12 +59,13 @@ Player.prototype.tick = function (input, map) {
 		}
 	}
 	if (input.isDown("down")) {
-		if (input.isDown("fire")) {
+		if (input.isDown("fire") && this.numTraps > 0) {
 			if (this.trapLaunch < 0) {
 				this.trapLaunch = 20;
 			} else {
 				if (--this.trapLaunch === -1) {
 					this.trapLaunch = 1000; // TODO: just release fire button.
+					this.numTraps--;
 					this.traps.push(
 						new Trap().init(this.x, this.y - 2 - 24)
 					);
@@ -110,9 +114,16 @@ Player.prototype.tickVelocity = function () {
 	this.yo += this.vel[1];
 };
 Player.prototype.hit = function (e) {
-	if (e instanceof Piece) {
+	if (e instanceof Pickup) {
 		e.remove = true;
-		audio.sfx.pickup();
+		if(this.numPickups++ >= 3) {
+			audio.sfx.pickup();
+			this.numTraps++;
+			this.numPickups = 0;
+		} else {
+			audio.sfx.pickup();
+		}
+
 	}
 };
 Player.prototype.hitSpear = function (spear) {

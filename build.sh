@@ -15,8 +15,8 @@ echo "${header}" | \
 cat - \
 \
 src/scripts/utils.js \
-src/scripts/gen.js \
 src/scripts/audio/audio.js \
+src/scripts/map/gen.js \
 src/scripts/map/BLOCKS.js \
 src/scripts/map/Sheet.js \
 src/scripts/map/Map.js \
@@ -24,6 +24,7 @@ src/scripts/entities/Entity.js \
 src/scripts/entities/Ghoul.js \
 src/scripts/entities/Player.js \
 src/scripts/entities/Spear.js \
+src/scripts/entities/Pickup.js \
 src/scripts/entities/Piece.js \
 src/scripts/Camera.js \
 src/scripts/screens/title.js \

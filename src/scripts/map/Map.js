@@ -13,8 +13,8 @@
 			this.sheet = sheet;
 			this.camera = camera;
 
-			this.expandRoomMap(this.generateRooms());
-			this.addPieces();
+			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
+			this.pickups = this.addPickups();
 
 			this.walkable = BLOCKS.walkable;
 			this.cellH = this.cells.length;
@@ -28,7 +28,7 @@
 
 		},
 
-		generateRooms: function () {
+		generateRoomMap: function () {
 
 			var roomMap = [];
 
@@ -42,42 +42,43 @@
 			return roomMap;
 		},
 
-		expandRoomMap: function (roomMap) {
+		expandRoomMap: function (rooms, roomMap) {
 
 			var cells = [],
+				room,
 				roomsH = roomMap.length,
 				roomsW = roomMap[0].length,
 				cellW = rooms[0][0].length,
-				cellH = rooms[0].length;
+				cellH = rooms[0].length,
+				x,
+				y;
 
-			cells = new Array(roomsH * cellH);
-
-			for (var y = 0; y < cells.length; y++) {
-				cells[y] = new Array(roomsW * cellW);
-				for (var x = 0; x < cells[0].length; x++) {
-					var roomX = x / cellW | 0,
-						roomY = y / cellH | 0,
-						room = roomMap[roomY][roomX];
-					cells[y][x] = rooms[room][y % cellH][x % cellW];
+			for (y = 0; y < roomsH * cellH; y++) {
+				cells.push([]);
+				for (x = 0; x < roomsW * cellW; x++) {
+					room = roomMap[y / cellH | 0][x / cellW | 0];
+					cells[y].push(rooms[room][y % cellH][x % cellW]);
 				}
 			}
 
-			this.cells = cells;
+			return cells;
 
 		},
 
-		addPieces: function () {
+		addPickups: function () {
 
-			this.pieces = [];
+			var pickup = [];
 
 			for (var i = 0; i < 30; i++) {
 
-				this.pieces.push([
+				pickup.push([
 					Math.random() * this.cells.length | 0,
 					Math.random() * this.cells[0].length | 0
 				]);
 
 			}
+
+			return pickup;
 
 		},
 

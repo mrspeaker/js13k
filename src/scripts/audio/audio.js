@@ -1,9 +1,8 @@
 (function () {
 
-	var c = new (window.AudioContext || window.webkitAudioContext)();
+	var c;
 
 	function Modulator (type, freq, gain) {
-		return;
 	  // this.osc = audioCtx.createOscillator();
 	  // this.gain = audioCtx.createGainNode();
 	  // this.osc.type = type;
@@ -52,6 +51,7 @@
 				o.start(0);
 				o.stop(now + 0.1);
 			},
+
 			shoot: function () {
 				var now = c.currentTime;
 				var s = noise();
@@ -95,7 +95,8 @@
 		},
 
 		init: function () {
-			this.ctx = c;
+			this.ctx = c = new (window.AudioContext || window.webkitAudioContext)();
+
 			this.master = c.createGain();
 			this.master.gain.value = 0.5;
 			this.master.connect(c.destination);

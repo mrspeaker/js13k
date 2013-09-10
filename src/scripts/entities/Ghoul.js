@@ -3,6 +3,7 @@ var Ghoul = function () {
 	this.h = 22;
 	this.dir = 1;
 	this.speed = 3;
+	this.life = 3;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir) {
@@ -22,7 +23,9 @@ Ghoul.prototype.init = function (x, y, dir) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.remove = true;
+		if(this.life-- <= 0) {
+			this.remove = true;
+		}
 	}
 	if (e instanceof Trap) {
 		this.remove = true;
