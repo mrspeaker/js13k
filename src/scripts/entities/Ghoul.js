@@ -4,6 +4,7 @@ var Ghoul = function () {
 	this.dir = 1;
 	this.speed = 3;
 	this.life = 3;
+	this.knockBack = 0;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir) {
@@ -23,6 +24,7 @@ Ghoul.prototype.init = function (x, y, dir) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
+		this.knockBack = 12 * -this.dir;
 		if(this.life-- <= 0) {
 			this.remove = true;
 		}
@@ -34,6 +36,11 @@ Ghoul.prototype.hit = function (e) {
 Ghoul.prototype.tick = function () {
 	this.y += Math.sin(Date.now() / 100);
 	this.x += this.speed * this.dir;
+
+	if (this.knockBack !== 0) {
+		this.x += this.knockBack;
+		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
+	}
 
 	if (this.x < 0 || this.x > game.ctx.w) {
 		//this.remove = true;
