@@ -90,7 +90,8 @@ Entity.prototype = {
 
 		this.wasFalling = this.falling;
 		if (yBlocks[0] <= map.walkable && yBlocks[1] <= map.walkable) {
-			this.falling = true;
+			if (!this.onLadder) this.falling = true;
+			else this.falling = false;
 		} else {
 			this.falling = false;
 		}

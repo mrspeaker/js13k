@@ -92,9 +92,7 @@ Player.prototype.tick = function (input, map) {
 
 	this.wasFalling = this.falling;
 	this.move(this.xo, this.yo, map);
-
-
-	this.checkBlocks(map);
+	this.checkBlocks(input, map);
 
 };
 
@@ -130,14 +128,13 @@ Player.prototype.isMoving = function () {
 };
 Player.prototype.hitBlocks = function (x, y) {
 
-
 	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
 		this.x = this.initpos[0];
 		this.y = this.initpos[1];
 	}
 
 };
-Player.prototype.checkBlocks = function (map) {
+Player.prototype.checkBlocks = function (input, map) {
 
 	this.wasOnLadder = this.onLadder;
 
@@ -155,6 +152,9 @@ Player.prototype.checkBlocks = function (map) {
 				// Snap to top.
 				this.y = utils.snap(this.y, map.sheet.h) + (map.sheet.h - this.h);
 				this.onTopOfLadder = true;
+				if (!input.isDown("down")) {
+					this.vel[1] = 0;
+				}
 			}
 		}
 		this.onLadder = true;
