@@ -6,6 +6,7 @@ var Player = function() {
 	this.grav = 0;
 	this.friction = 0.75;
 	this.falling = true;
+	this.wasFalling = false;
 	this.onLadder = false;
 	this.wasOnLadder = false;
 	this.dir = 1;
@@ -46,11 +47,11 @@ Player.prototype.tick = function (input, map) {
 		if (this.inWater || (this.onLadder && !this.onTopOfLadder)) {
 			this.acc[1] -= speed;
 		} else {
-			if (!this.falling) {
+			if (!this.falling && !this.wasFalling) {
 				audio.sfx.jump();
 				this.acc[1] = -map.sheet.h - 1;
 				this.vel[1] = 0;
-				this.falling = true
+				this.falling = true;
 			}
 		}
 	}
@@ -88,7 +89,10 @@ Player.prototype.tick = function (input, map) {
 	}
 
 	this.tickVelocity();
+
+	this.wasFalling = this.falling;
 	this.move(this.xo, this.yo, map);
+
 
 	this.checkBlocks(map);
 
