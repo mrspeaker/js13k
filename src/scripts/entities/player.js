@@ -112,6 +112,7 @@ Player.prototype.tickVelocity = function () {
 Player.prototype.hit = function (e) {
 	if (e instanceof Piece) {
 		e.remove = true;
+		audio.sfx.pickup();
 	}
 };
 Player.prototype.hitSpear = function (spear) {

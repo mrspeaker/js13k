@@ -69,6 +69,28 @@
 
 				s.start(0);
 				s.stop(now + 0.04);
+			},
+
+			pickup: function () {
+				var now = c.currentTime;
+				var o = c.createOscillator();
+				var f = c.createBiquadFilter();
+				var g = c.createGain();
+				o.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
+				g.gain.value = 0.15;
+				f.frequency.value = 3000;
+				f.Q.value = 10;
+
+				o.type = "sine"
+				o.frequency.value = 0;
+				o.frequency.setValueAtTime(600, now);
+				o.frequency.linearRampToValueAtTime(2600, now + 0.12);
+
+				o.start(0);
+				o.stop(now + 0.12);
 			}
 		},
 

@@ -12,12 +12,7 @@ Piece.prototype.init = function (x, y) {
 Piece.prototype.tick = function (map) {
 	return !(this.remove);
 };
-Piece.prototype.hit = function (e) {
-
-	if (e instanceof Player) {
-	}
-
-};
+Piece.prototype.hit = function (e) {};
 Piece.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.fillStyle = "#a00";
