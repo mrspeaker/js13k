@@ -241,7 +241,7 @@ Player.prototype.render = function (c) {
 		}
 	} else {
 		// Standing still.
-		if (!this.onLadder) {
+		if (!this.onLadder || this.wasFalling) {
 			c.fillRect(this.x + 2, this.y + 20, 3, 3);
 			c.fillRect(this.x + 8, this.y + 20, 3, 3);
 			c.fillRect(this.x + 4, this.y + 11, 3, 5);
