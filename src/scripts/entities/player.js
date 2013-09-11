@@ -132,13 +132,11 @@ Player.prototype.hit = function (e) {
 		e.remove = true;
 		this.level.xp(e);
 		// Befor you needed multipe pickups to make a trap. remove this.
-		if(++this.numPickups >= 1) {
-			audio.sfx.pickup();
-			this.numTraps++;
-			this.numPickups = 0;
-		} else {
-			audio.sfx.pickup();
-		}
+		audio.sfx.pickup();
+		this.numTraps++;
+		if(this.numPickups++ === 0) {
+			this.level.firstPickup();
+		};
 		return;
 	}
 	if (e instanceof Ghoul) {
@@ -152,10 +150,12 @@ Player.prototype.hit = function (e) {
 		p[e.id] = true;
 		this.checkpoint = [this.x, this.y];
 		this.level.xp(e);
-		if (p[0] && p[1] && p[2] && p[3]) {
-			alert("wins the game!");
-			game.reset();
+		if (this.complete() === 4) {
+			this.level.winsTheGame();
 		} else {
+			if (this.complete() === 1) {
+				this.level.firstPiece();
+			}
 			this.traps.forEach(function (t) {
 				t.setClosestPiece(this.level.pieces.filter(function (p) {
 					return p !== e;

@@ -27,6 +27,7 @@ src/scripts/entities/Spear.js \
 src/scripts/entities/Pickup.js \
 src/scripts/entities/Piece.js \
 src/scripts/Camera.js \
+src/scripts/screens/Dialog.js \
 src/scripts/screens/title.js \
 src/scripts/screens/level.js \
 src/scripts/input.js \

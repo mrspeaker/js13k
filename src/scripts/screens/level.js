@@ -66,10 +66,40 @@ Screen.level = {
 		utils.checkCollision(this.player, this.ghouls);
 	},
 
+
 	xp: function (e) {
 
 		this.player.xp += e.xpValue;
 
+	},
+
+	firstPickup: function () {
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE FOUND A GHOUL TRAP...", 40, 60);
+			game.res.font(c, "TO ACTIVATE IT, HOLD DOWN AND FIRE.", 40, 100);
+			game.res.font(c, "CATCH A GHOUL TO FIND YOUR WAY.", 40, 150);
+		});
+	},
+
+	firstPiece: function () {
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE HOLY GRAIL.", 40, 60);
+			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
+			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
+
+			game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
+		});
+	},
+
+	winsTheGame: function () {
+
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
+			game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
+			game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
+		}, function () {
+			game.reset();
+		});
 	},
 
 	render: function (c) {

@@ -3,6 +3,8 @@ var game = {
 	tw: 20,
 	th: 24,
 
+	dialog: null,
+
 	init: function () {
 		this.ctx = this.addMainCanvas();
 
@@ -33,9 +35,17 @@ var game = {
 	},
 
 	run: function (d) {
-		this.screen.tick(this.input);
+		if (!this.dialog) {
+			this.screen.tick(this.input);
+		} else {
+			if (!this.dialog.tick(this.input)) {
+				this.dialog = null;
+			}
+		}
 		this.input.tick();
+
 		this.screen.render(this.ctx);
+		this.dialog && this.dialog.render(this.ctx);
 
 		window.requestAnimationFrame(function () {
         	game.run(Date.now());
