@@ -106,7 +106,8 @@ Player.prototype.tick = function (input, map) {
 };
 
 Player.prototype.tickVelocity = function () {
-	this.grav = this.falling ? this.grav + 0.25 : 0;
+	this.grav = Math.min(this.falling ? this.grav + 0.23 : 0, 2.3);
+
 	this.vel = [this.vel[0] + this.acc[0], this.vel[1] + this.acc[1] + this.grav];
 	this.vel = [this.vel[0] * this.friction, this.vel[1] * this.friction];
 
@@ -228,6 +229,7 @@ Player.prototype.render = function (c) {
 	});
 
 	c.strokeStyle = "#000";
+	c.lineWidth = 2;
 
 	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";

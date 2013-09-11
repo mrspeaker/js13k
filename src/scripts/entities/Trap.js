@@ -5,6 +5,7 @@ var Trap = function (){
 	this.y = 0;
 	this.life = 5;
 	this.closest = null;
+	this.activated = false;
 };
 Trap.prototype = new Entity;
 Trap.prototype.init = function (x, y) {
@@ -18,6 +19,7 @@ Trap.prototype.tick = function (map) {
 };
 Trap.prototype.hit = function (e) {
 	if (e instanceof Ghoul) {
+		this.activated = true;
 		if (--this.life === 0) {
 			this.remove = true;
 		}
@@ -50,10 +52,11 @@ Trap.prototype.render = function (c) {
 	c.fillStyle = "#a00";
 	c.fillRect(this.x, this.y + this.h - 3, this.w, 3);
 
-	if (this.closest[0]) {
+	if (this.activated && this.closest[0]) {
 		c.fillStyle = "#fff";
 		c.fillRect(this.x, this.y, 3, 3);
 		c.strokeStyle = "#fff";
+		c.lineWidth = 3;
 		c.beginPath();
 		c.moveTo(this.x - (Math.cos(this.closest[2]) * 15), this.y - (Math.sin(this.closest[2]) * 15));
 		c.lineTo(this.x, this.y);

@@ -82,10 +82,10 @@ Entity.prototype = {
 		// Add the allowed X movement
 		this.x += xo;
 
-		// check if we're falling
+		// check if we're falling (with some pixels overhang)
 		yBlocks = map.getBlocks([
-			[this.x, this.y + this.h],
-			[this.x + (this.w - 1), this.y + this.h]
+			[this.x - (this.dir > 0 ? 6 : 0), this.y + this.h],
+			[this.x + (this.w - 1) + (this.dir < 0 ? 6 : 0), this.y + this.h]
 		]);
 
 		this.wasFalling = this.falling;
