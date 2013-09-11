@@ -24,7 +24,7 @@ Ghoul.prototype.init = function (x, y, dir) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.knockBack = 12 * -this.dir;
+		this.knockBack = e.dir === this.dir ? 5 * e.dir : -12 * this.dir;
 		if(this.life-- <= 0) {
 			this.remove = true;
 		}
