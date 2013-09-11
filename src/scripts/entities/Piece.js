@@ -3,9 +3,10 @@ var Piece = function (){
 	this.h = 24;
 };
 Piece.prototype = new Entity;
-Piece.prototype.init = function (x, y) {
+Piece.prototype.init = function (x, y, id) {
 	this.x = x;
 	this.y = y;
+	this.id = id;
 
 	return this;
 }
@@ -14,6 +15,11 @@ Piece.prototype.tick = function (map) {
 };
 Piece.prototype.hit = function (e) {};
 Piece.prototype.render = function (c) {
+	c.shadowColor =  "hsl(70, 100%, 50%)";
+    c.shadowOffsetX = 0;
+    c.shadowOffsetY = 0;
+    c.shadowBlur    = 10;
+
 	c.strokeStyle = "#ff0";
 	c.fillStyle = "#aa0";
 	c.beginPath();

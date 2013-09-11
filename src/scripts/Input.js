@@ -39,6 +39,15 @@ var Input = {
 
 	},
 
+	reset: function () {
+
+		for (var k in this.keys) {
+			this.keys[k].isDown = false;
+			this.keys[k].wasDown = false;
+		}
+
+	},
+
 	tick: function () {
 
 		var key;

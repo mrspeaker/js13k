@@ -28,6 +28,7 @@ var game = {
 	},
 
 	reset: function () {
+		this.input.reset();
 		this.setScreen(Screen.level);
 	},
 

@@ -13,6 +13,7 @@ var Player = function() {
 
 	this.numPickups = 0;
 	this.numTraps = 0;
+	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
 };
@@ -124,6 +125,15 @@ Player.prototype.hit = function (e) {
 			audio.sfx.pickup();
 		}
 
+	}
+	if (e instanceof Piece) {
+		e.remove = true;
+		var p = this.pieces;
+		p[e.id] = true;
+		if (p[0] && p[1] && p[2] && p[3]) {
+			alert("wins the game!");
+			game.reset();
+		}
 	}
 };
 Player.prototype.hitSpear = function (spear) {

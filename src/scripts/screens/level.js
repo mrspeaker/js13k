@@ -11,8 +11,9 @@ Screen.level = {
 		this.pickups = this.map.pickups.map(function (p) {
 			return new Pickup().init(p[0] * game.tw, p[1] * game.th)
 		});
-		this.pieces = [];
-
+		this.pieces = this.map.pieces.map(function (p, i) {
+			return new Piece().init(p[0] * game.tw, p[1] * game.th, i)
+		});
 		this.ghouls = [
 			new Ghoul().init(200, 285)
 		];

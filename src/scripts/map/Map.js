@@ -15,6 +15,7 @@
 
 			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
 			this.pickups = this.addPickups();
+			this.pieces = this.addPieces();
 
 			this.walkable = BLOCKS.walkable;
 			this.cellH = this.cells.length;
@@ -79,6 +80,23 @@
 			}
 
 			return pickup;
+
+		},
+
+		addPieces: function () {
+
+			var pieces = [];
+
+			for (var i = 0; i < 4; i++) {
+
+				pieces.push([
+					Math.random() * 10, //this.cells.length | 0,
+					Math.random() * 10 //this.cells[0].length | 0
+				]);
+
+			}
+
+			return pieces;
 
 		},
 
