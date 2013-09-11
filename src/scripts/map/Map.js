@@ -70,7 +70,7 @@
 
 			var pickup = [];
 
-			for (var i = 0; i < 30; i++) {
+			for (var i = 0; i < 60; i++) {
 
 				pickup.push([
 					Math.random() * this.cells[0].length | 0,

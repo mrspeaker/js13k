@@ -5,6 +5,14 @@ var utils = {
 
 	},
 
+	anim: function (sfunc, efunc, cb) {
+
+		return function () {
+			// ticks
+		}
+
+	},
+
 	checkCollision: function (entity, entities, cbName) {
 
 		var i,

@@ -12,7 +12,7 @@ var Player = function() {
 	this.dir = 1;
 
 	this.numPickups = 0;
-	this.numTraps = 10;
+	this.numTraps = 0;
 	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
@@ -121,7 +121,7 @@ Player.prototype.tickVelocity = function () {
 Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
-		if(this.numPickups++ >= 3) {
+		if(++this.numPickups >= 1) {
 			audio.sfx.pickup();
 			this.numTraps++;
 			this.numPickups = 0;

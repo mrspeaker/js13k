@@ -5,7 +5,6 @@ var Trap = function (){
 	this.y = 0;
 	this.life = 5;
 	this.closest = null;
-	this.ticks = 100;
 };
 Trap.prototype = new Entity;
 Trap.prototype.init = function (x, y) {
@@ -15,9 +14,6 @@ Trap.prototype.init = function (x, y) {
 	return this;
 }
 Trap.prototype.tick = function (map) {
-	if (this.ticks-- < 0) {
-		this.remove = true;
-	}
 	return !(this.remove);
 };
 Trap.prototype.hit = function (e) {

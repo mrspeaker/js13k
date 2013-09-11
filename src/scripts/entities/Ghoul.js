@@ -2,7 +2,7 @@ var Ghoul = function () {
 	this.w = 15;
 	this.h = 22;
 	this.dir = 1;
-	this.speed = 3;
+	this.speed = 1.1;
 	this.life = 3;
 	this.knockBack = 0;
 };
@@ -33,20 +33,23 @@ Ghoul.prototype.hit = function (e) {
 		this.remove = true;
 	}
 };
-Ghoul.prototype.tick = function () {
-	this.y += Math.sin(Date.now() / 100);
-	this.x += this.speed * this.dir;
+Ghoul.prototype.tick = function (map) {
+	var yo = Math.sin(Date.now() / 100),
+		xo = this.speed * this.dir;
 
 	if (this.knockBack !== 0) {
-		this.x += this.knockBack;
+		xo += this.knockBack;
 		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
 
-	if (this.x < 0 || this.x > game.ctx.w) {
-		//this.remove = true;
-		this.dir *= -1;
-	}
+	//if (this.x + xo < 0 || this.x + xo > game.ctx.w) {
+	//	this.dir *= -1;
+	//}
+	this.move(xo, yo, map);
 	return !(this.remove);
+};
+Ghoul.prototype.hitBlocks = function (x, y) {
+	this.dir *= -1;
 };
 Ghoul.prototype.render = function (c) {
 

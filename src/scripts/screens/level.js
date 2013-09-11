@@ -14,9 +14,7 @@ Screen.level = {
 		this.pieces = this.map.pieces.map(function (p, i) {
 			return new Piece().init(p[0] * game.tw, p[1] * game.th, i)
 		});
-		this.ghouls = [
-			new Ghoul().init(200, 285)
-		];
+		this.ghouls = [];
 
 		return this;
 	},
@@ -25,8 +23,8 @@ Screen.level = {
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghouls = this.ghouls.filter(function (g) {
-			return g.tick();
-		});
+			return g.tick(this.map);
+		}, this);
 		this.pickups = this.pickups.filter(function (p) {
 			return p.tick();
 		});
@@ -34,9 +32,25 @@ Screen.level = {
 			return p.tick();
 		});
 
-		if (Math.random() < 0.01 && this.ghouls.length < 15) {
+		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+			var empty = false,
+				x,
+				y;
+			while (!empty) {
+				x = Math.random() * (this.map.cellW - 4) | 0;
+				y = (Math.random() * (this.map.cellH - 4) | 0) + 2;
+				empty = true;
+				for (var i = 0; i < 4; i++) {
+					if (this.map.cells[y][x + i] > this.map.walkable ||
+						this.map.cells[y - 1][x + i] > this.map.walkable ||
+						this.map.cells[y + 1][x + i] > this.map.walkable ) {
+						empty = false;
+						break;
+					}
+				}
+			}
 			this.ghouls.push(
-				new Ghoul().init(5, [110, 280, 420][Math.random() * 3 | 0], 1)
+				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1)
 			)
 		}
 
