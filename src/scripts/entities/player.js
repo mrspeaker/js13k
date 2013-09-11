@@ -1,6 +1,7 @@
 var Player = function() {
 	this.w = 12;
 	this.h = 23;
+	this.xp = 0;
 	this.vel = [0, 0];
 	this.acc = [0, 0];
 	this.grav = 0;
@@ -129,6 +130,8 @@ Player.prototype.tickVelocity = function () {
 Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
+		this.level.xp(e);
+		// Befor you needed multipe pickups to make a trap. remove this.
 		if(++this.numPickups >= 1) {
 			audio.sfx.pickup();
 			this.numTraps++;
@@ -148,6 +151,7 @@ Player.prototype.hit = function (e) {
 		var p = this.pieces;
 		p[e.id] = true;
 		this.checkpoint = [this.x, this.y];
+		this.level.xp(e);
 		if (p[0] && p[1] && p[2] && p[3]) {
 			alert("wins the game!");
 			game.reset();

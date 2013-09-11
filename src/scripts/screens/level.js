@@ -50,7 +50,7 @@ Screen.level = {
 				}
 			}
 			this.ghouls.push(
-				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1)
+				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
 		}
 
@@ -60,6 +60,12 @@ Screen.level = {
 		utils.checkCollision(this.player, this.pieces);
 		utils.checkCollision(this.player, this.pickups);
 		utils.checkCollision(this.player, this.ghouls);
+	},
+
+	xp: function (e) {
+
+		this.player.xp += e.xpValue;
+
 	},
 
 	render: function (c) {
@@ -75,7 +81,7 @@ Screen.level = {
 		]);
 
 		game.res.font(c, "GRAIL: " + this.player.complete() + "/4", 20, 20);
-		game.res.font(c, "XP: " + this.player.numTraps, 20, 40);
+		game.res.font(c, "XP: " + this.player.xp, 20, 40);
 		game.res.font(c, "TRAPS: " + this.player.numTraps, 20, 60);
 
 

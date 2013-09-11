@@ -5,11 +5,14 @@ var Ghoul = function () {
 	this.speed = 1.1;
 	this.life = 3;
 	this.knockBack = 0;
+	this.xpValue = 5;
 };
 Ghoul.prototype = new Entity;
-Ghoul.prototype.init = function (x, y, dir) {
+Ghoul.prototype.init = function (x, y, dir, level) {
 	this.x = x;
 	this.y = y;
+
+	this.level = level;
 
 	this.dir = dir || 1;
 
@@ -26,6 +29,7 @@ Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
 		this.knockBack = e.dir === this.dir ? 5 * e.dir : -12 * this.dir;
 		if(this.life-- <= 0) {
+			this.level.xp(this);
 			this.remove = true;
 		}
 	}

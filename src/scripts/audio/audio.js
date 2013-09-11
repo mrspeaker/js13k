@@ -39,11 +39,11 @@
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.15;
+				g.gain.value = 0.12;
 				f.frequency.value = 2000;
 				f.Q.value = 10;
 
-				o.type = "square"
+				o.type = "sine"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.1);
