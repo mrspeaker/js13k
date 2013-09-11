@@ -4,6 +4,8 @@ var Trap = function (){
 	this.x = 0;
 	this.y = 0;
 	this.life = 5;
+	this.closest = null;
+	this.ticks = 100;
 };
 Trap.prototype = new Entity;
 Trap.prototype.init = function (x, y) {
@@ -13,20 +15,34 @@ Trap.prototype.init = function (x, y) {
 	return this;
 }
 Trap.prototype.tick = function (map) {
+	if (this.ticks-- < 0) {
+		this.remove = true;
+	}
 	return !(this.remove);
 };
 Trap.prototype.hit = function (e) {
-
 	if (e instanceof Ghoul) {
 		if (--this.life === 0) {
 			this.remove = true;
 		}
-
 	}
+};
+Trap.prototype.setClosestPiece = function (pieces) {
+	var self = this;
+	this.closest = pieces.reduce(function (acc, p) {
+		var dist = utils.dist([self.x, self.y], [p.x, p.y]),
+			angle = utils.angleBetween(self, p);
 
+		angle %= Math.PI * 2;
+   		if (angle < 0) angle += Math.PI * 2;
+
+		if (!acc[0] || dist < acc[1]) {
+			return [p, dist, angle];
+		}
+		return acc;
+	}, [null, -1, -1]);
 };
 Trap.prototype.render = function (c) {
-	//c.fillStyle = "hsla(55, 100%, 50%, " + (this.life / 5) + ")";
 
 	var grd = c.createLinearGradient(this.x + 10, this.y, this.x + 10, this.y + this.h);
 	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
@@ -37,5 +53,16 @@ Trap.prototype.render = function (c) {
 
 	c.fillStyle = "#a00";
 	c.fillRect(this.x, this.y + this.h - 3, this.w, 3);
+
+	if (this.closest[0]) {
+		c.fillStyle = "#fff";
+		c.fillRect(this.x, this.y, 3, 3);
+		c.strokeStyle = "#fff";
+		c.beginPath();
+		c.moveTo(this.x - (Math.cos(this.closest[2]) * 15), this.y - (Math.sin(this.closest[2]) * 15));
+		c.lineTo(this.x, this.y);
+		c.stroke();
+	}
+
 };
 

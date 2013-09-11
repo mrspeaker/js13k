@@ -4,7 +4,7 @@ Screen.level = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.player = new Player().init(100, 100);
+		this.player = new Player().init(100, 100, this);
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 

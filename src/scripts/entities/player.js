@@ -12,15 +12,16 @@ var Player = function() {
 	this.dir = 1;
 
 	this.numPickups = 0;
-	this.numTraps = 0;
+	this.numTraps = 10;
 	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
 };
 Player.prototype = new Entity;
-Player.prototype.init = function (x, y) {
+Player.prototype.init = function (x, y, level) {
 	this.x = x;
 	this.y = y;
+	this.level = level;
 
 	this.initpos = [x, y];
 
@@ -70,6 +71,9 @@ Player.prototype.tick = function (input, map) {
 					this.traps.push(
 						new Trap().init(this.x, this.y - 2 - 24)
 					);
+					this.traps.forEach(function (t) {
+						t.setClosestPiece(this.level.pieces);
+					}, this);
 				}
 			}
 		} else {
@@ -133,6 +137,12 @@ Player.prototype.hit = function (e) {
 		if (p[0] && p[1] && p[2] && p[3]) {
 			alert("wins the game!");
 			game.reset();
+		} else {
+			this.traps.forEach(function (t) {
+				t.setClosestPiece(this.level.pieces.filter(function (p) {
+					return p !== e;
+				}));
+			}, this);
 		}
 	}
 };

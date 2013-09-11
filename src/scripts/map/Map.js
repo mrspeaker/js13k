@@ -73,8 +73,8 @@
 			for (var i = 0; i < 30; i++) {
 
 				pickup.push([
-					Math.random() * this.cells.length | 0,
-					Math.random() * this.cells[0].length | 0
+					Math.random() * this.cells[0].length | 0,
+					Math.random() * this.cells.length | 0
 				]);
 
 			}
@@ -90,8 +90,8 @@
 			for (var i = 0; i < 4; i++) {
 
 				pieces.push([
-					Math.random() * 10, //this.cells.length | 0,
-					Math.random() * 10 //this.cells[0].length | 0
+					Math.random() * this.cells[0].length | 0,
+					Math.random() * this.cells.length | 0
 				]);
 
 			}
