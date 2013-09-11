@@ -360,7 +360,7 @@ var GEN = {
 
 		var ctx = utils.createCanvas(24 * 30, 24),
 			dbl = utils.createCanvas(24 * 30, 24),
-			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;/'",
+			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,/'",
 			charArray = chars.split(""),
 			sheet;
 
@@ -523,11 +523,16 @@ function makeSheet(img, w, h) {
 				x,
 				y;
 
-			for (y = 0; y < roomsH * cellH; y++) {
+			for (y = 0; y < roomsH * cellH + 2; y++) {
 				cells.push([]);
 				for (x = 0; x < roomsW * cellW; x++) {
-					room = roomMap[y / cellH | 0][x / cellW | 0];
-					cells[y].push(rooms[room][y % cellH][x % cellW]);
+					if (y < roomsH * cellH) {
+						room = roomMap[y / cellH | 0][x / cellW | 0];
+						cells[y].push(rooms[room][y % cellH][x % cellW]);
+					} else {
+						// bedrock
+						cells[y].push(6);
+					}
 				}
 			}
 
@@ -829,9 +834,11 @@ var Ghoul = function () {
 	this.h = 22;
 	this.dir = 1;
 	this.speed = 1.1;
+	this.angrySpeed = 1.5;
 	this.life = 3;
 	this.knockBack = 0;
 	this.xpValue = 5;
+	this.isAngry = false;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir, level) {
@@ -864,18 +871,37 @@ Ghoul.prototype.hit = function (e) {
 	}
 };
 Ghoul.prototype.tick = function (map) {
-	var yo = Math.sin(Date.now() / 100),
+	var yo = 0,
+		xo = 0,
+		player;
+	if (!this.isAngry) {
+		yo = Math.sin(Date.now() / 100);
 		xo = this.speed * this.dir;
+	} else {
+		player = this.level.player;
+		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
+		if (dist < 300) {
+			if (Math.abs(this.y - player.y) > 2) {
+				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
+			} else if (Math.abs(this.x - player.x) > 5) {
+				this.dir = this.x < player.x ? 1 : -1;
+				xo = this.angrySpeed * this.dir;
+			}
+		}
+
+	}
 
 	if (this.knockBack !== 0) {
 		xo += this.knockBack;
 		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
 
-	//if (this.x + xo < 0 || this.x + xo > game.ctx.w) {
-	//	this.dir *= -1;
-	//}
-	this.move(xo, yo, map);
+	if (!this.isAngry) {
+		this.move(xo, yo, map);
+	} else {
+		this.x += xo;
+		this.y += yo;
+	}
 	return !(this.remove);
 };
 Ghoul.prototype.hitBlocks = function (x, y) {
@@ -890,11 +916,11 @@ Ghoul.prototype.render = function (c) {
     c.shadowOffsetY = 0;
     c.shadowBlur    = 10;
 
-	c.fillStyle = "hsl(180, 80%, 50%)";
+	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
-	c.fillStyle = "hsl(120, 30%, 40%)";
+	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 	//c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
@@ -1037,13 +1063,11 @@ Player.prototype.hit = function (e) {
 		e.remove = true;
 		this.level.xp(e);
 		// Befor you needed multipe pickups to make a trap. remove this.
-		if(++this.numPickups >= 1) {
-			audio.sfx.pickup();
-			this.numTraps++;
-			this.numPickups = 0;
-		} else {
-			audio.sfx.pickup();
-		}
+		audio.sfx.pickup();
+		this.numTraps++;
+		if(this.numPickups++ === 0) {
+			this.level.firstPickup();
+		};
 		return;
 	}
 	if (e instanceof Ghoul) {
@@ -1057,10 +1081,12 @@ Player.prototype.hit = function (e) {
 		p[e.id] = true;
 		this.checkpoint = [this.x, this.y];
 		this.level.xp(e);
-		if (p[0] && p[1] && p[2] && p[3]) {
-			alert("wins the game!");
-			game.reset();
+		if (this.complete() === 4) {
+			this.level.winsTheGame();
 		} else {
+			if (this.complete() === 1) {
+				this.level.firstPiece();
+			}
 			this.traps.forEach(function (t) {
 				t.setClosestPiece(this.level.pieces.filter(function (p) {
 					return p !== e;
@@ -1460,6 +1486,34 @@ var Camera = {
 		c.restore();
 	}
 };
+var Dialog = function () {
+	this.count = 0;
+};
+Dialog.prototype = {
+
+	init: function (renderfunc, donefunc) {
+		this.renderfunc = renderfunc;
+		this.donefunc = donefunc;
+		return this;
+	},
+
+	tick: function () {
+		this.count ++;
+
+		if (this.count > 50 && Input.isDown("fire")) {
+			this.donefunc && this.donefunc.call(this);
+			return false;
+		}
+		return true;
+	},
+
+	render: function (c) {
+		c.fillStyle = "rgba(0, 0, 0, 0.85)";
+		c.fillRect(0, 0, game.ctx.w, game.ctx.h);
+
+		this.renderfunc.call(this, c);
+	}
+};
 window.Screen = window.Screen || {};
 Screen.title = {
 
@@ -1535,6 +1589,10 @@ Screen.level = {
 			this.ghouls.push(
 				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
+			// Random based on completeness that ghost is angry
+			if (Math.random() < 0.4 * ((this.player.complete() + 1) / 4)) {
+				this.ghouls[this.ghouls.length - 1].isAngry = true;
+			}
 		}
 
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
@@ -1545,10 +1603,40 @@ Screen.level = {
 		utils.checkCollision(this.player, this.ghouls);
 	},
 
+
 	xp: function (e) {
 
 		this.player.xp += e.xpValue;
 
+	},
+
+	firstPickup: function () {
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE FOUND A GHOUL TRAP...", 40, 60);
+			game.res.font(c, "TO ACTIVATE IT, HOLD DOWN AND FIRE.", 40, 100);
+			game.res.font(c, "CATCH A GHOUL TO FIND YOUR WAY.", 40, 150);
+		});
+	},
+
+	firstPiece: function () {
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE HOLY GRAIL.", 40, 60);
+			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
+			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
+
+			game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
+		});
+	},
+
+	winsTheGame: function () {
+
+		game.dialog = new Dialog().init(function (c) {
+			game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
+			game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
+			game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
+		}, function () {
+			game.reset();
+		});
 	},
 
 	render: function (c) {
@@ -1646,6 +1734,8 @@ var game = {
 	tw: 20,
 	th: 24,
 
+	dialog: null,
+
 	init: function () {
 		this.ctx = this.addMainCanvas();
 
@@ -1676,9 +1766,17 @@ var game = {
 	},
 
 	run: function (d) {
-		this.screen.tick(this.input);
+		if (!this.dialog) {
+			this.screen.tick(this.input);
+		} else {
+			if (!this.dialog.tick(this.input)) {
+				this.dialog = null;
+			}
+		}
 		this.input.tick();
+
 		this.screen.render(this.ctx);
+		this.dialog && this.dialog.render(this.ctx);
 
 		window.requestAnimationFrame(function () {
         	game.run(Date.now());

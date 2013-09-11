@@ -1,11 +1,19 @@
 window.Screen = window.Screen || {};
 Screen.title = {
 
+	count: 0,
+
 	init: function () {
 		return this;
 	},
 
 	tick: function (input) {
+
+		this.count++;
+
+		if (this.count > 50 && input.pressed("fire")) {
+			game.setScreen(Screen.level);
+		}
 
 	},
 
@@ -13,9 +21,7 @@ Screen.title = {
 		c.fillStyle = "#000";
 		c.fillRect(0, 0, c.w, c.h);
 
-		c.fillStyle = "#888";
-		c.font = "10pt monospace";
-		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
+		game.res.font(c, "JS1K BY MRSPEAKER", 140, 160);
 	}
 
 };

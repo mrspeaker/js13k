@@ -6,6 +6,7 @@ js13k entry by Mr Speaker
 - return to save point on contact/death
 - check spawn loc of loot
 - stop player going out of bounds
+- stop ghouls going out of bounds
 - draw "activated" arrow
 - more rooms
 - game win screen
