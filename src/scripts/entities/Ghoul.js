@@ -3,9 +3,11 @@ var Ghoul = function () {
 	this.h = 22;
 	this.dir = 1;
 	this.speed = 1.1;
+	this.angrySpeed = 1.5;
 	this.life = 3;
 	this.knockBack = 0;
 	this.xpValue = 5;
+	this.isAngry = false;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir, level) {
@@ -38,18 +40,37 @@ Ghoul.prototype.hit = function (e) {
 	}
 };
 Ghoul.prototype.tick = function (map) {
-	var yo = Math.sin(Date.now() / 100),
+	var yo = 0,
+		xo = 0,
+		player;
+	if (!this.isAngry) {
+		yo = Math.sin(Date.now() / 100);
 		xo = this.speed * this.dir;
+	} else {
+		player = this.level.player;
+		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
+		if (dist < 300) {
+			if (Math.abs(this.y - player.y) > 2) {
+				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
+			} else if (Math.abs(this.x - player.x) > 5) {
+				this.dir = this.x < player.x ? 1 : -1;
+				xo = this.angrySpeed * this.dir;
+			}
+		}
+
+	}
 
 	if (this.knockBack !== 0) {
 		xo += this.knockBack;
 		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
 
-	//if (this.x + xo < 0 || this.x + xo > game.ctx.w) {
-	//	this.dir *= -1;
-	//}
-	this.move(xo, yo, map);
+	if (!this.isAngry) {
+		this.move(xo, yo, map);
+	} else {
+		this.x += xo;
+		this.y += yo;
+	}
 	return !(this.remove);
 };
 Ghoul.prototype.hitBlocks = function (x, y) {
@@ -64,7 +85,7 @@ Ghoul.prototype.render = function (c) {
     c.shadowOffsetY = 0;
     c.shadowBlur    = 10;
 
-	c.fillStyle = "hsl(180, 80%, 50%)";
+	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 

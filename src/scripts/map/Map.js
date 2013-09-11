@@ -54,11 +54,16 @@
 				x,
 				y;
 
-			for (y = 0; y < roomsH * cellH; y++) {
+			for (y = 0; y < roomsH * cellH + 2; y++) {
 				cells.push([]);
 				for (x = 0; x < roomsW * cellW; x++) {
-					room = roomMap[y / cellH | 0][x / cellW | 0];
-					cells[y].push(rooms[room][y % cellH][x % cellW]);
+					if (y < roomsH * cellH) {
+						room = roomMap[y / cellH | 0][x / cellW | 0];
+						cells[y].push(rooms[room][y % cellH][x % cellW]);
+					} else {
+						// bedrock
+						cells[y].push(6);
+					}
 				}
 			}
 

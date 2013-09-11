@@ -8,6 +8,14 @@ var utils = {
 
 	},
 
+	anim: function (sfunc, efunc, cb) {
+
+		return function () {
+			// ticks
+		}
+
+	},
+
 	checkCollision: function (entity, entities, cbName) {
 
 		var i,
@@ -70,141 +78,53 @@ var utils = {
 				}
 			}
 		}
+	},
+
+	createCanvas: function (w, h, id) {
+		var can = document.createElement("canvas"),
+			ctx = can.getContext("2d");
+		ctx.imageSmoothingEnabled = false;
+		ctx.mozImageSmoothingEnabled = false;
+		ctx.webkitImageSmoothingEnabled = false;
+		ctx.w = w;
+		ctx.h = h;
+		can.setAttribute("height", h);
+		can.setAttribute("width", w);
+		id && can.setAttribute("id", id);
+
+		return ctx;
+	},
+
+	dist: function (a, b) {
+
+		var dx = a[0] - b[0],
+			dy = a[1] - b[1];
+
+		return Math.sqrt(dx * dx + dy * dy);
+
+	},
+
+	angleBetween: function (a, b) {
+
+		var dx = a.x - b.x,
+			dy = a.y - b.y,
+			angle = Math.atan2(dy, dx);
+
+		return angle % Math.PI;
+
 	}
+
 
 };
 
 // Polyfills
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
 
-var GEN = {
-	tiles: function (w, h) {
-
-		var tile,
-			maxTiles = 20,
-			x, y, i, pixels,
-			c,
-			can;
-
-		can = document.createElement("canvas");
-		can.setAttribute("width", maxTiles * w);
-		can.setAttribute("height", 1 * h);
-		c = can.getContext("2d");
-
-		pixels = c.createImageData(can.width, can.height);
-
-		for (tile = 0; tile < maxTiles; tile++) {
-
-			for (y = 0; y < h; y++) {
-
-				for(x = 0; x < w; x++) {
-
-					var off = x * 4 + (y * can.width * 4) + (tile * w * 4);
-
-					var color = 0xff00ff,
-						br = 255,
-						siny;
-
-					br = 255 - ((Math.random() * 96) | 0);
-					switch (tile) {
-						case 5:
-						case 11:
-						case 12:
-							color = 0x715137;
-							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
-			                    color = 0x6AAA40;
-			                } else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
-			                    br = br * 2 / 3;
-			                }
-			                if (tile === 11 && x < 2 && y < 2) {
-			                	var dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
-			                	if (dist >= 1.8) {
-									color = -1;
-								}
-								break;
-							}
-							if (tile === 12 && x > 17 && y < 2) {
-			                	var dist = Math.sqrt((17 - x) * (17 - x) + (2 - y) * (2 - y));
-			                	if (dist >= 1.9) {
-									color = -1;
-								}
-								break;
-							}
-							break;
-						case 7:
-							color = 0x715137;
-							break;
-						case 6:
-							color = 0x7f7f7f;
-							break;
-						case 1:
-							color = Math.random() < 0.15 ? 0x50D937 : -1;
-							if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
-                        		color = 0xe1c479;
-                    		}
-							break;
-						case 2:
-						case 3:
-						case 4:
-							color = 0x4b83c3;
-							siny = y % 12 - ((tile-2)*4);
-							if (siny < 0) siny += 12;
-							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
-								color = 0xffffff;
-							}
-							break;
-						case 8:
-						case 9:
-						case 10:
-							color = 0xfe9b00;
-							siny = y % 4 - (tile - 8);
-							if (siny < 0) siny += 4;
-							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
-								color = 0xe12900;
-							}
-							br = Math.min(255, br * 1.4);
-							break;
-					}
-
-                    if (color == -1) {
-                    	pixels.data[off + 0] = 0;
-	      				pixels.data[off + 1] = 0;
-	      				pixels.data[off + 2] = 0;
-	      				pixels.data[off + 3] = 0;
-
-                    } else {
-						var col = (((color >> 16) & 0xff) * br / 255) << 16
-		                    | (((color >> 8) & 0xff) * br / 255) << 8
-		                    | (((color) & 0xff) * br / 255);
-
-						pixels.data[off + 0] = (col >> 16) & 0xff;
-	      				pixels.data[off + 1] = (col >> 8) & 0xff;
-	      				pixels.data[off + 2] = col & 0xff;
-	      				pixels.data[off + 3] = 255;
-	      			}
-
-				}
-
-			}
-
-		}
-
-		for (i = 0; i < can.width * can.height; i++) {
-        	//pixels.data[i * 4 + 3] = 255;
-    	}
-
-		c.putImageData(pixels, 0, 0);
-
-		return can;
-
-	}
-};
 (function () {
 
-	var c = new (window.AudioContext || window.webkitAudioContext)();
+	var c;
 
 	function Modulator (type, freq, gain) {
-		return;
 	  // this.osc = audioCtx.createOscillator();
 	  // this.gain = audioCtx.createGainNode();
 	  // this.osc.type = type;
@@ -241,11 +161,11 @@ var GEN = {
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.15;
+				g.gain.value = 0.12;
 				f.frequency.value = 2000;
 				f.Q.value = 10;
 
-				o.type = "square"
+				o.type = "sine"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.1);
@@ -253,6 +173,7 @@ var GEN = {
 				o.start(0);
 				o.stop(now + 0.1);
 			},
+
 			shoot: function () {
 				var now = c.currentTime;
 				var s = noise();
@@ -296,7 +217,8 @@ var GEN = {
 		},
 
 		init: function () {
-			this.ctx = c;
+			this.ctx = c = new (window.AudioContext || window.webkitAudioContext)();
+
 			this.master = c.createGain();
 			this.master.gain.value = 0.5;
 			this.master.connect(c.destination);
@@ -323,6 +245,190 @@ var GEN = {
 
 }());
 
+var GEN = {
+	tiles: function (w, h) {
+
+		var maxTiles = 20,
+			tile,
+			c,
+			pixels,
+			x,
+			y,
+			i,
+			off,
+			color,
+			col,
+			dist,
+			br,
+			siny;
+
+		c = utils.createCanvas(maxTiles * w, h);
+		pixels = c.createImageData(c.w, c.h);
+
+		for (tile = 0; tile < maxTiles; tile++) {
+
+			for (y = 0; y < h; y++) {
+
+				for(x = 0; x < w; x++) {
+
+					off = x * 4 + (y * c.w * 4) + (tile * w * 4);
+					color = 0xff00ff;
+					br = 255 - ((Math.random() * 96) | 0);
+
+					switch (tile) {
+						case 5:
+						case 11:
+						case 12:
+							color = 0x715137;
+							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
+								color = 0x6aaa40;
+							} else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
+								br = br * 2 / 3;
+							}
+							if (tile === 11 && x < 2 && y < 2) {
+								dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
+								if (dist >= 1.8) {
+									color = -1;
+								}
+								break;
+							}
+							if (tile === 12 && x > 17 && y < 2) {
+								dist = Math.sqrt((17 - x) * (17 - x) + (2 - y) * (2 - y));
+								if (dist >= 1.9) {
+									color = -1;
+								}
+								break;
+							}
+							break;
+						case 7:
+							color = 0x715137;
+							break;
+						case 6:
+							color = 0x7f7f7f;
+							break;
+						case 1:
+							color = Math.random() < 0.15 ? 0x50D937 : -1;
+							if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
+								color = 0xe1c479;
+							}
+							break;
+						case 2:
+						case 3:
+						case 4:
+							color = 0x4b83c3;
+							siny = y % 12 - ((tile-2)*4);
+							if (siny < 0) siny += 12;
+							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
+								color = 0xffffff;
+							}
+							break;
+						case 8:
+						case 9:
+						case 10:
+							color = 0xfe9b00;
+							siny = y % 4 - (tile - 8);
+							if (siny < 0) siny += 4;
+							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
+								color = 0xe12900;
+							}
+							br = Math.min(255, br * 1.4);
+							break;
+					}
+
+					col = (((color >> 16) & 0xff) * br / 255) << 16
+						| (((color >> 8) & 0xff) * br / 255) << 8
+						| (((color) & 0xff) * br / 255);
+
+					pixels.data[off + 0] = color == -1 ? 0 : (col >> 16) & 0xff;
+					pixels.data[off + 1] = color == -1 ? 0 : (col >> 8) & 0xff;
+					pixels.data[off + 2] = color == -1 ? 0 : col & 0xff;
+					pixels.data[off + 3] = color == -1 ? 0 : 255;
+
+				}
+
+			}
+
+		}
+
+		c.putImageData(pixels, 0, 0);
+
+		return c.canvas;
+
+	},
+
+	font: function () {
+
+		var ctx = utils.createCanvas(24 * 30, 24),
+			dbl = utils.createCanvas(24 * 30, 24),
+			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;/'",
+			charArray = chars.split(""),
+			sheet;
+
+		ctx.fillStyle = "#fff";
+		ctx.font = "24px courier new";
+
+		charArray.forEach(function (c, i) {
+			ctx.fillText(c, i * 16, 16);
+		});
+
+		var pixels = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
+			pixelsDbl = dbl.getImageData(0, 0, dbl.canvas.width, dbl.canvas.height),
+			scale = 1;
+
+		 for (var row = 0; row < pixels.height; row++) {
+			for (var col = 0; col < pixels.width; col++) {
+				var co = (col / 2.5 | 0) * 2.5 | 0;
+				var ro = (row / 2.5 | 0) * 2.5 | 0;
+				var sourcePixel = [
+					pixels.data[(ro * pixels.width + co) * 4 + 0],
+					pixels.data[(ro * pixels.width + co) * 4 + 1],
+					pixels.data[(ro * pixels.width + co) * 4 + 2],
+					pixels.data[(ro * pixels.width + co) * 4 + 3]
+				];
+
+				if (sourcePixel[3] < 20) {
+					if (sourcePixel[3] > 100) {
+						sourcePixel[0] = 255;
+						sourcePixel[1] = 255;
+						sourcePixel[2] = 0;
+						sourcePixel[3] = 155
+					} else {
+
+						sourcePixel[3] = 0;
+					}
+				}
+				else sourcePixel[3] = 255;
+
+				//if (row % 2 === 0) {
+				//	sourcePixel[3] = 100;
+				//}
+
+				for(var y = 0; y < scale; y++) {
+					var destRow = row * scale + y;
+					for(var x = 0; x < scale; x++) {
+						var destCol = col * scale + x;
+						for(var i = 0; i < 4; i++) {
+							pixelsDbl.data[(destRow * pixelsDbl.width + destCol) * 4 + i] = sourcePixel[i];
+						}
+					}
+				}
+			}
+		}
+
+		dbl.putImageData(pixelsDbl, 0, 0);
+		sheet = makeSheet(dbl.canvas, 16, 24);
+
+		return function (ctx, msg, x, y) {
+			msg.split("").forEach(function (c, i) {
+				if (c !== " ") {
+					sheet.render(ctx, charArray.indexOf(c), 0, x + i * 16, y);
+				}
+				return true;
+			});
+		}
+
+	}
+};
 var BLOCKS = {
 
 	walkable: 4,
@@ -376,8 +482,9 @@ function makeSheet(img, w, h) {
 			this.sheet = sheet;
 			this.camera = camera;
 
-			this.expandRoomMap(this.generateRooms());
-			this.addPieces();
+			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
+			this.pickups = this.addPickups();
+			this.pieces = this.addPieces();
 
 			this.walkable = BLOCKS.walkable;
 			this.cellH = this.cells.length;
@@ -391,7 +498,7 @@ function makeSheet(img, w, h) {
 
 		},
 
-		generateRooms: function () {
+		generateRoomMap: function () {
 
 			var roomMap = [];
 
@@ -405,42 +512,60 @@ function makeSheet(img, w, h) {
 			return roomMap;
 		},
 
-		expandRoomMap: function (roomMap) {
+		expandRoomMap: function (rooms, roomMap) {
 
 			var cells = [],
+				room,
 				roomsH = roomMap.length,
 				roomsW = roomMap[0].length,
 				cellW = rooms[0][0].length,
-				cellH = rooms[0].length;
+				cellH = rooms[0].length,
+				x,
+				y;
 
-			cells = new Array(roomsH * cellH);
-
-			for (var y = 0; y < cells.length; y++) {
-				cells[y] = new Array(roomsW * cellW);
-				for (var x = 0; x < cells[0].length; x++) {
-					var roomX = x / cellW | 0,
-						roomY = y / cellH | 0,
-						room = roomMap[roomY][roomX];
-					cells[y][x] = rooms[room][y % cellH][x % cellW];
+			for (y = 0; y < roomsH * cellH; y++) {
+				cells.push([]);
+				for (x = 0; x < roomsW * cellW; x++) {
+					room = roomMap[y / cellH | 0][x / cellW | 0];
+					cells[y].push(rooms[room][y % cellH][x % cellW]);
 				}
 			}
 
-			this.cells = cells;
+			return cells;
+
+		},
+
+		addPickups: function () {
+
+			var pickup = [];
+
+			for (var i = 0; i < 60; i++) {
+
+				pickup.push([
+					Math.random() * this.cells[0].length | 0,
+					Math.random() * this.cells.length | 0
+				]);
+
+			}
+
+			return pickup;
 
 		},
 
 		addPieces: function () {
 
-			this.pieces = [];
+			var pieces = [];
 
-			for (var i = 0; i < 30; i++) {
+			for (var i = 0; i < 4; i++) {
 
-				this.pieces.push([
-					Math.random() * this.cells.length | 0,
-					Math.random() * this.cells[0].length | 0
+				pieces.push([
+					Math.random() * this.cells[0].length | 0,
+					Math.random() * this.cells.length | 0
 				]);
 
 			}
+
+			return pieces;
 
 		},
 
@@ -673,10 +798,10 @@ Entity.prototype = {
 		// Add the allowed X movement
 		this.x += xo;
 
-		// check if we're falling
+		// check if we're falling (with some pixels overhang)
 		yBlocks = map.getBlocks([
-			[this.x, this.y + this.h],
-			[this.x + (this.w - 1), this.y + this.h]
+			[this.x - (this.dir > 0 ? 6 : 0), this.y + this.h],
+			[this.x + (this.w - 1) + (this.dir < 0 ? 6 : 0), this.y + this.h]
 		]);
 
 		this.wasFalling = this.falling;
@@ -703,12 +828,17 @@ var Ghoul = function () {
 	this.w = 15;
 	this.h = 22;
 	this.dir = 1;
-	this.speed = 3;
+	this.speed = 1.1;
+	this.life = 3;
+	this.knockBack = 0;
+	this.xpValue = 5;
 };
 Ghoul.prototype = new Entity;
-Ghoul.prototype.init = function (x, y, dir) {
+Ghoul.prototype.init = function (x, y, dir, level) {
 	this.x = x;
 	this.y = y;
+
+	this.level = level;
 
 	this.dir = dir || 1;
 
@@ -723,21 +853,33 @@ Ghoul.prototype.init = function (x, y, dir) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.remove = true;
+		this.knockBack = e.dir === this.dir ? 5 * e.dir : -12 * this.dir;
+		if(this.life-- <= 0) {
+			this.level.xp(this);
+			this.remove = true;
+		}
 	}
 	if (e instanceof Trap) {
 		this.remove = true;
 	}
 };
-Ghoul.prototype.tick = function () {
-	this.y += Math.sin(Date.now() / 100);
-	this.x += this.speed * this.dir;
+Ghoul.prototype.tick = function (map) {
+	var yo = Math.sin(Date.now() / 100),
+		xo = this.speed * this.dir;
 
-	if (this.x < 0 || this.x > game.ctx.w) {
-		//this.remove = true;
-		this.dir *= -1;
+	if (this.knockBack !== 0) {
+		xo += this.knockBack;
+		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
+
+	//if (this.x + xo < 0 || this.x + xo > game.ctx.w) {
+	//	this.dir *= -1;
+	//}
+	this.move(xo, yo, map);
 	return !(this.remove);
+};
+Ghoul.prototype.hitBlocks = function (x, y) {
+	this.dir *= -1;
 };
 Ghoul.prototype.render = function (c) {
 
@@ -750,9 +892,11 @@ Ghoul.prototype.render = function (c) {
 
 	c.fillStyle = "hsl(180, 80%, 50%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
 	c.fillStyle = "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	//c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
 	c.fillStyle = "hsl(120, 40%, 50%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
@@ -762,6 +906,7 @@ Ghoul.prototype.render = function (c) {
 };var Player = function() {
 	this.w = 12;
 	this.h = 23;
+	this.xp = 0;
 	this.vel = [0, 0];
 	this.acc = [0, 0];
 	this.grav = 0;
@@ -772,12 +917,20 @@ Ghoul.prototype.render = function (c) {
 	this.wasOnLadder = false;
 	this.dir = 1;
 
+	this.numPickups = 0;
+	this.numTraps = 0;
+	this.pieces = [false, false, false, false];
+
 	this.trapLaunch = -1;
+
 };
 Player.prototype = new Entity;
-Player.prototype.init = function (x, y) {
+Player.prototype.init = function (x, y, level) {
 	this.x = x;
 	this.y = y;
+	this.level = level;
+
+	this.checkpoint = [this.x, this.y];
 
 	this.initpos = [x, y];
 
@@ -793,6 +946,10 @@ Player.prototype.init = function (x, y) {
 
 	return this;
 },
+Player.prototype.complete = function () {
+	var p = this.pieces;
+	return p[0] + p[1] + p[2] + p[3];
+};
 Player.prototype.tick = function (input, map) {
 
 	var speed = 0.9;
@@ -817,15 +974,19 @@ Player.prototype.tick = function (input, map) {
 		}
 	}
 	if (input.isDown("down")) {
-		if (input.isDown("fire")) {
+		if (input.isDown("fire") && this.numTraps > 0) {
 			if (this.trapLaunch < 0) {
 				this.trapLaunch = 20;
 			} else {
 				if (--this.trapLaunch === -1) {
 					this.trapLaunch = 1000; // TODO: just release fire button.
+					this.numTraps--;
 					this.traps.push(
 						new Trap().init(this.x, this.y - 2 - 24)
 					);
+					this.traps.forEach(function (t) {
+						t.setClosestPiece(this.level.pieces);
+					}, this);
 				}
 			}
 		} else {
@@ -858,7 +1019,8 @@ Player.prototype.tick = function (input, map) {
 };
 
 Player.prototype.tickVelocity = function () {
-	this.grav = this.falling ? this.grav + 0.25 : 0;
+	this.grav = Math.min(this.falling ? this.grav + 0.23 : 0, 2.3);
+
 	this.vel = [this.vel[0] + this.acc[0], this.vel[1] + this.acc[1] + this.grav];
 	this.vel = [this.vel[0] * this.friction, this.vel[1] * this.friction];
 
@@ -871,9 +1033,41 @@ Player.prototype.tickVelocity = function () {
 	this.yo += this.vel[1];
 };
 Player.prototype.hit = function (e) {
+	if (e instanceof Pickup) {
+		e.remove = true;
+		this.level.xp(e);
+		// Befor you needed multipe pickups to make a trap. remove this.
+		if(++this.numPickups >= 1) {
+			audio.sfx.pickup();
+			this.numTraps++;
+			this.numPickups = 0;
+		} else {
+			audio.sfx.pickup();
+		}
+		return;
+	}
+	if (e instanceof Ghoul) {
+		this.killed();
+		return;
+	}
+
 	if (e instanceof Piece) {
 		e.remove = true;
-		audio.sfx.pickup();
+		var p = this.pieces;
+		p[e.id] = true;
+		this.checkpoint = [this.x, this.y];
+		this.level.xp(e);
+		if (p[0] && p[1] && p[2] && p[3]) {
+			alert("wins the game!");
+			game.reset();
+		} else {
+			this.traps.forEach(function (t) {
+				t.setClosestPiece(this.level.pieces.filter(function (p) {
+					return p !== e;
+				}));
+			}, this);
+		}
+		return;
 	}
 };
 Player.prototype.hitSpear = function (spear) {
@@ -892,11 +1086,15 @@ Player.prototype.hitSpear = function (spear) {
 Player.prototype.isMoving = function () {
 	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
 };
+
+Player.prototype.killed = function (spear) {
+	this.x = this.checkpoint[0];
+	this.y = this.checkpoint[1];
+};
 Player.prototype.hitBlocks = function (x, y) {
 
 	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
-		this.x = this.initpos[0];
-		this.y = this.initpos[1];
+		this.killed();
 	}
 
 };
@@ -949,6 +1147,10 @@ Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;
 
+	c.fillStyle = "#900";
+	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 4, this.w, 4);
+	// draw checkpoint
+
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
 	});
@@ -958,6 +1160,7 @@ Player.prototype.render = function (c) {
 	});
 
 	c.strokeStyle = "#000";
+	c.lineWidth = 2;
 
 	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";
@@ -1079,14 +1282,42 @@ Spear.prototype.render = function (c) {
 
 };
 
+var Pickup = function (){
+	this.w = 20;
+	this.h = 24;
+	this.xpValue = 3;
+};
+Pickup.prototype = new Entity;
+Pickup.prototype.init = function (x, y) {
+	this.x = x;
+	this.y = y;
+
+	return this;
+}
+Pickup.prototype.tick = function (map) {
+	return !(this.remove);
+};
+Pickup.prototype.hit = function (e) {};
+Pickup.prototype.render = function (c) {
+	c.strokeStyle = "#000";
+	c.fillStyle = "#a00";
+	c.beginPath();
+	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
+	c.fill();
+	c.stroke();
+
+};
+
 var Piece = function (){
 	this.w = 20;
 	this.h = 24;
+	this.xpValue = 11;
 };
 Piece.prototype = new Entity;
-Piece.prototype.init = function (x, y) {
+Piece.prototype.init = function (x, y, id) {
 	this.x = x;
 	this.y = y;
+	this.id = id;
 
 	return this;
 }
@@ -1095,13 +1326,17 @@ Piece.prototype.tick = function (map) {
 };
 Piece.prototype.hit = function (e) {};
 Piece.prototype.render = function (c) {
-	c.strokeStyle = "#000";
-	c.fillStyle = "#a00";
+	c.shadowColor =  "hsl(70, 100%, 50%)";
+    c.shadowOffsetX = 0;
+    c.shadowOffsetY = 0;
+    c.shadowBlur    = 10;
+
+	c.strokeStyle = "#ff0";
+	c.fillStyle = "#aa0";
 	c.beginPath();
 	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
 	c.fill();
 	c.stroke();
-
 };
 
 var Camera = {
@@ -1252,17 +1487,17 @@ Screen.level = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.player = new Player().init(100, 100);
+		this.player = new Player().init(100, 100, this);
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
-		this.pieces = this.map.pieces.map(function (p) {
-			return new Piece().init(p[0] * game.tw, p[1] * game.th)
+		this.pickups = this.map.pickups.map(function (p) {
+			return new Pickup().init(p[0] * game.tw, p[1] * game.th)
 		});
-
-		this.ghouls = [
-			new Ghoul().init(200, 285)
-		];
+		this.pieces = this.map.pieces.map(function (p, i) {
+			return new Piece().init(p[0] * game.tw, p[1] * game.th, i)
+		});
+		this.ghouls = [];
 
 		return this;
 	},
@@ -1271,15 +1506,34 @@ Screen.level = {
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghouls = this.ghouls.filter(function (g) {
-			return g.tick();
+			return g.tick(this.map);
+		}, this);
+		this.pickups = this.pickups.filter(function (p) {
+			return p.tick();
 		});
 		this.pieces = this.pieces.filter(function (p) {
 			return p.tick();
 		});
 
-		if (Math.random() < 0.01 && this.ghouls.length < 15) {
+		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+			var empty = false,
+				x,
+				y;
+			while (!empty) {
+				x = Math.random() * (this.map.cellW - 4) | 0;
+				y = (Math.random() * (this.map.cellH - 4) | 0) + 2;
+				empty = true;
+				for (var i = 0; i < 4; i++) {
+					if (this.map.cells[y][x + i] > this.map.walkable ||
+						this.map.cells[y - 1][x + i] > this.map.walkable ||
+						this.map.cells[y + 1][x + i] > this.map.walkable ) {
+						empty = false;
+						break;
+					}
+				}
+			}
 			this.ghouls.push(
-				new Ghoul().init(5, [110, 280, 420][Math.random() * 3 | 0], 1)
+				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
 		}
 
@@ -1287,22 +1541,32 @@ Screen.level = {
 		utils.checkCollisions([this.ghouls, this.player.traps]);
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 		utils.checkCollision(this.player, this.pieces);
+		utils.checkCollision(this.player, this.pickups);
+		utils.checkCollision(this.player, this.ghouls);
+	},
+
+	xp: function (e) {
+
+		this.player.xp += e.xpValue;
+
 	},
 
 	render: function (c) {
 
 		c.clearRect(0, 0, c.w, c.h);
 
-		// var grd = c.createLinearGradient(0, 0, 0, c.h);
-		// grd.addColorStop(0, 'hsl(30, 50%, 25%)');
-		// grd.addColorStop(1, 'hsl(20, 50%, 00%)');
-		// c.fillStyle = grd;
+		this.camera.render(c, [
+			this.map,
+			this.pickups,
+			this.pieces,
+			this.ghouls,
+			this.player
+		]);
 
-		c.fillStyle = "#550";
-		c.font = "10pt monospace";
-		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
+		game.res.font(c, "GRAIL: " + this.player.complete() + "/4", 20, 20);
+		game.res.font(c, "XP: " + this.player.xp, 20, 40);
+		game.res.font(c, "TRAPS: " + this.player.numTraps, 20, 60);
 
-		this.camera.render(c, [this.map, this.pieces, this.ghouls, this.player]);
 
 	}
 };
@@ -1347,6 +1611,15 @@ var Input = {
 
 	},
 
+	reset: function () {
+
+		for (var k in this.keys) {
+			this.keys[k].isDown = false;
+			this.keys[k].wasDown = false;
+		}
+
+	},
+
 	tick: function () {
 
 		var key;
@@ -1372,16 +1645,17 @@ var game = {
 
 	tw: 20,
 	th: 24,
-	res: {},
 
 	init: function () {
 		this.ctx = this.addMainCanvas();
-		this.font = this.createChars();
+
 		this.res = {
-			"tiles": GEN.tiles(this.tw, this.th)
+			"tiles": GEN.tiles(this.tw, this.th),
+			"font": GEN.font()
 		}
-		audio.init();
+
 		this.input = Input.init();
+		audio.init();
 		this.reset();
 		this.run();
 	},
@@ -1390,98 +1664,14 @@ var game = {
 		this.screen = screen.init();
 	},
 
-	createCanvas: function (w, h, id) {
-		var can = document.createElement("canvas"),
-			ctx = can.getContext("2d");
-		ctx.imageSmoothingEnabled = false;
-		ctx.mozImageSmoothingEnabled = false;
-		ctx.webkitImageSmoothingEnabled = false;
-		ctx.w = w;
-		ctx.h = h;
-		can.setAttribute("height", h);
-		can.setAttribute("width", w);
-		id && can.setAttribute("id", id);
-
-		return ctx;
-	},
-
 	addMainCanvas: function () {
-		var ctx = this.createCanvas(720, 405, "board");
+		var ctx = utils.createCanvas(720, 405, "board");
 		document.body.appendChild(ctx.canvas);
 		return ctx;
-	},
-
-	createChars: function () {
-
-		var ctx = this.createCanvas(12 * 30, 12),
-			dbl = this.createCanvas(24 * 30, 24),
-			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;'",
-			charArray = chars.split("");
-
-		ctx.fillStyle = "#fff";
-		ctx.font = "12px courier new";
-
-		charArray.forEach(function (c, i) {
-			ctx.fillText(c, i * 8, 8);
-		});
-		document.body.appendChild(ctx.canvas);
-
-		var pixels = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-			pixelsDbl = dbl.getImageData(0, 0, dbl.canvas.width, dbl.canvas.height),
-			scale = 2;
-
-		 for(var row = 0; row < pixels.height; row++) {
-		    for(var col = 0; col < pixels.width; col++) {
-		      var sourcePixel = [
-		        pixels.data[(row * pixels.width + col) * 4 + 0],
-		        pixels.data[(row * pixels.width + col) * 4 + 1],
-		        pixels.data[(row * pixels.width + col) * 4 + 2],
-		        pixels.data[(row * pixels.width + col) * 4 + 3]
-		      ];
-
-		      if (sourcePixel[3] < 36) {
-		      	if (sourcePixel[3] > 0) {
-		      		sourcePixel[0] = 255;
-		      		sourcePixel[1] = 255;
-		      		sourcePixel[2] = 0;
-		      		sourcePixel[3] = 155
-		      	} else {
-		      		sourcePixel[3] = 0;
-		      	}
-		      }
-		      else sourcePixel[3] = 255;
-
-		      for(var y = 0; y < scale; y++) {
-		        var destRow = row * scale + y;
-		        for(var x = 0; x < scale; x++) {
-		          var destCol = col * scale + x;
-		          for(var i = 0; i < 4; i++) {
-		            pixelsDbl.data[(destRow * pixelsDbl.width + destCol) * 4 + i] =
-		              sourcePixel[i];
-		          }
-		        }
-		      }
-		    }
-		  }
-
-		dbl.putImageData(pixelsDbl, 0, 0);
-		document.body.appendChild(dbl.canvas);
-
-		var sheet = makeSheet(dbl.canvas, 16, 24);
-
-		return function (ctx, msg, x, y) {
-			msg.split("").forEach(function (c, i) {
-				if (c !== " ") {
-					sheet.render(ctx, charArray.indexOf(c), 0, x + i * 16, y);
-				}
-				return true;
-			});
-		}
-
-
 	},
 
 	reset: function () {
+		this.input.reset();
 		this.setScreen(Screen.level);
 	},
 
@@ -1489,8 +1679,6 @@ var game = {
 		this.screen.tick(this.input);
 		this.input.tick();
 		this.screen.render(this.ctx);
-
-		this.font(this.ctx, "HEY CHAPS! YOU ROK", 14, 20);
 
 		window.requestAnimationFrame(function () {
         	game.run(Date.now());
