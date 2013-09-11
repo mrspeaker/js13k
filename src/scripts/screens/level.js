@@ -59,6 +59,7 @@ Screen.level = {
 		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
 		utils.checkCollision(this.player, this.pieces);
 		utils.checkCollision(this.player, this.pickups);
+		utils.checkCollision(this.player, this.ghouls);
 	},
 
 	render: function (c) {
@@ -73,7 +74,10 @@ Screen.level = {
 			this.player
 		]);
 
-		game.res.font(c, "TRAPS: " + this.player.numTraps, 20, 20)
+		game.res.font(c, "GRAIL: " + this.player.complete() + "/4", 20, 20);
+		game.res.font(c, "XP: " + this.player.numTraps, 20, 40);
+		game.res.font(c, "TRAPS: " + this.player.numTraps, 20, 60);
+
 
 	}
 };

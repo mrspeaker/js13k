@@ -16,12 +16,15 @@ var Player = function() {
 	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
 	this.x = x;
 	this.y = y;
 	this.level = level;
+
+	this.checkpoint = [this.x, this.y];
 
 	this.initpos = [x, y];
 
@@ -37,6 +40,10 @@ Player.prototype.init = function (x, y, level) {
 
 	return this;
 },
+Player.prototype.complete = function () {
+	var p = this.pieces;
+	return p[0] + p[1] + p[2] + p[3];
+};
 Player.prototype.tick = function (input, map) {
 
 	var speed = 0.9;
@@ -129,12 +136,18 @@ Player.prototype.hit = function (e) {
 		} else {
 			audio.sfx.pickup();
 		}
-
+		return;
 	}
+	if (e instanceof Ghoul) {
+		this.killed();
+		return;
+	}
+
 	if (e instanceof Piece) {
 		e.remove = true;
 		var p = this.pieces;
 		p[e.id] = true;
+		this.checkpoint = [this.x, this.y];
 		if (p[0] && p[1] && p[2] && p[3]) {
 			alert("wins the game!");
 			game.reset();
@@ -145,6 +158,7 @@ Player.prototype.hit = function (e) {
 				}));
 			}, this);
 		}
+		return;
 	}
 };
 Player.prototype.hitSpear = function (spear) {
@@ -163,11 +177,15 @@ Player.prototype.hitSpear = function (spear) {
 Player.prototype.isMoving = function () {
 	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
 };
+
+Player.prototype.killed = function (spear) {
+	this.x = this.checkpoint[0];
+	this.y = this.checkpoint[1];
+};
 Player.prototype.hitBlocks = function (x, y) {
 
 	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
-		this.x = this.initpos[0];
-		this.y = this.initpos[1];
+		this.killed();
 	}
 
 };
@@ -219,6 +237,10 @@ Player.prototype.checkBlocks = function (input, map) {
 Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;
+
+	c.fillStyle = "#900";
+	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 4, this.w, 4);
+	// draw checkpoint
 
 	this.projectiles.forEach(function (p) {
 		return p.render(c);

@@ -111,43 +111,50 @@ var GEN = {
 
 	font: function () {
 
-		var ctx = utils.createCanvas(12 * 30, 12),
+		var ctx = utils.createCanvas(24 * 30, 24),
 			dbl = utils.createCanvas(24 * 30, 24),
-			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;'",
+			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;/'",
 			charArray = chars.split(""),
 			sheet;
 
 		ctx.fillStyle = "#fff";
-		ctx.font = "12px courier new";
+		ctx.font = "24px courier new";
 
 		charArray.forEach(function (c, i) {
-			ctx.fillText(c, i * 8, 8);
+			ctx.fillText(c, i * 16, 16);
 		});
 
 		var pixels = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
 			pixelsDbl = dbl.getImageData(0, 0, dbl.canvas.width, dbl.canvas.height),
-			scale = 2;
+			scale = 1;
 
 		 for (var row = 0; row < pixels.height; row++) {
 			for (var col = 0; col < pixels.width; col++) {
+				var co = (col / 2.5 | 0) * 2.5 | 0;
+				var ro = (row / 2.5 | 0) * 2.5 | 0;
 				var sourcePixel = [
-					pixels.data[(row * pixels.width + col) * 4 + 0],
-					pixels.data[(row * pixels.width + col) * 4 + 1],
-					pixels.data[(row * pixels.width + col) * 4 + 2],
-					pixels.data[(row * pixels.width + col) * 4 + 3]
+					pixels.data[(ro * pixels.width + co) * 4 + 0],
+					pixels.data[(ro * pixels.width + co) * 4 + 1],
+					pixels.data[(ro * pixels.width + co) * 4 + 2],
+					pixels.data[(ro * pixels.width + co) * 4 + 3]
 				];
 
-				if (sourcePixel[3] < 36) {
-					if (sourcePixel[3] > 0) {
+				if (sourcePixel[3] < 20) {
+					if (sourcePixel[3] > 100) {
 						sourcePixel[0] = 255;
 						sourcePixel[1] = 255;
 						sourcePixel[2] = 0;
 						sourcePixel[3] = 155
 					} else {
+
 						sourcePixel[3] = 0;
 					}
 				}
 				else sourcePixel[3] = 255;
+
+				//if (row % 2 === 0) {
+				//	sourcePixel[3] = 100;
+				//}
 
 				for(var y = 0; y < scale; y++) {
 					var destRow = row * scale + y;
