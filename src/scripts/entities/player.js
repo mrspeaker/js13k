@@ -19,6 +19,8 @@ var Player = function() {
 	this.trapLaunch = -1;
 	this.crouching = false;
 
+	this.deaded = false;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
@@ -47,6 +49,11 @@ Player.prototype.complete = function () {
 	return p[0] + p[1] + p[2] + p[3];
 };
 Player.prototype.tick = function (input, map) {
+
+	if (this.deaded) {
+		this.tickDead(input, map);
+		return;
+	}
 
 	var speed = 0.9;
 
@@ -130,6 +137,21 @@ Player.prototype.tick = function (input, map) {
 	}
 
 };
+Player.prototype.tickDead = function () {
+	var dx = this.x - this.checkpoint[0],
+		dy = this.y - this.checkpoint[1],
+		deadSpeed = 10;
+
+	if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+		this.x = this.checkpoint[0];
+		this.y = this.checkpoint[1];
+		this.deaded = false;
+	}
+
+	this.x += this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed;
+	this.y += this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed;
+
+};
 
 Player.prototype.tickVelocity = function () {
 	this.grav = Math.min(this.falling ? this.grav + 0.23 : 0, 2.3);
@@ -145,6 +167,7 @@ Player.prototype.tickVelocity = function () {
 	this.xo += this.vel[0];
 	this.yo += this.vel[1];
 };
+
 Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
@@ -203,8 +226,7 @@ Player.prototype.isMoving = function () {
 Player.prototype.killed = function (e) {
 	e && this.level.xp({xpValue:e.xpAttackValue});
 	this.level.explode(this.x + this.w / 2, this.y + this.h);
-	this.x = this.checkpoint[0];
-	this.y = this.checkpoint[1];
+	this.deaded = true;
 };
 Player.prototype.hitBlocks = function (x, y) {
 

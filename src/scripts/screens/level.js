@@ -71,10 +71,13 @@ Screen.level = {
 
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
 		utils.checkCollisions([this.ghouls, this.player.traps]);
-		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
-		utils.checkCollision(this.player, this.pieces);
-		utils.checkCollision(this.player, this.pickups);
-		utils.checkCollision(this.player, this.ghouls);
+
+		if (!this.player.deaded) {
+			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+			utils.checkCollision(this.player, this.pieces);
+			utils.checkCollision(this.player, this.pickups);
+			utils.checkCollision(this.player, this.ghouls);
+		}
 	},
 
 
