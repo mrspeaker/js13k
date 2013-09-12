@@ -51,7 +51,7 @@ Trap.prototype.render = function (c) {
 		c.beginPath();
 		c.moveTo(-5, 0);
 		c.lineTo(5, 0);
-		c.lineTo(0, -13);
+		c.lineTo(Math.sin(Date.now() / 350) * 2.4, -14);
 		c.fill();
 		c.stroke();
 
