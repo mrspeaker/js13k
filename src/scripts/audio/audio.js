@@ -12,6 +12,23 @@
 	  // this.osc.start(0);
 	}
 
+	function envelope(gain, time, volume, duration, a, d, s, r) {
+        gain.gain.cancelScheduledValues(0);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(volume, time + a);
+        gain.gain.linearRampToValueAtTime(volume * s, time + a + d);
+        gain.gain.setValueAtTime(volume * s, time + a + d + duration);
+        gain.gain.linearRampToValueAtTime(0, time + a + d + duration + r);
+    }
+
+    // trigger: function(time) {
+    //     this.noise.start(time, 1);
+    //     envelope(this.noise.gain, time, this.volume, 0.05,
+    //     0.01, 0.03, 0.25, this.release);
+    //     this.noise.filter.frequency.setValueAtTime(this.freqFrom, time);
+    //     this.noise.filter.frequency.linearRampToValueAtTime(this.freqTo, time + 0.1);
+    // }
+
 	function noise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
 			data = buf.getChannelData(0);
@@ -56,18 +73,18 @@
 				var now = c.currentTime;
 				var s = noise();
 
-				var f = c.createBiquadFilter();
+				//var f = c.createBiquadFilter();
 
-				f.connect(audio.master);
-				f.Q.value = 20;
-				var start = Math.random() * 2000 + 500 | 0;
-				f.frequency.value = start;
-				f.frequency.setValueAtTime(start, now);
-				f.frequency.linearRampToValueAtTime(100, now + 0.02);
+				s.connect(audio.master);
+				//f.Q.value = 20;
+				//var start = Math.random() * 2000 + 500 | 0;
+				//f.frequency.value = start;
+				//f.frequency.setValueAtTime(start, now);
+				//f.frequency.linearRampToValueAtTime(100, now + 0.02);
 
-				s.connect(f);
+				//s.connect(f);
 
-				s.start(0);
+				s.start(now, 0.04);
 				s.stop(now + 0.04);
 			},
 

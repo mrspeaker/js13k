@@ -21,7 +21,7 @@ Screen.title = {
 		c.fillStyle = "#000";
 		c.fillRect(0, 0, c.w, c.h);
 
-		game.res.font(c, "JS1K BY MRSPEAKER", 140, 160);
+		game.res.font(c, "JS13K BY MRSPEAKER", 140, 160);
 	}
 
 };

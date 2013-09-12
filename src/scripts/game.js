@@ -17,6 +17,9 @@ var game = {
 		audio.init();
 		this.reset();
 		this.run();
+
+		COLORTEST.ui();
+		COLORTEST.update();
 	},
 
 	setScreen: function (screen) {
@@ -25,6 +28,8 @@ var game = {
 
 	addMainCanvas: function () {
 		var ctx = utils.createCanvas(720, 405, "board");
+		ctx.canvas.backgroundColor = COLOR.back_main;
+
 		document.body.appendChild(ctx.canvas);
 		return ctx;
 	},

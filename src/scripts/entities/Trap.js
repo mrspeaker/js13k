@@ -42,6 +42,25 @@ Trap.prototype.setClosestPiece = function (pieces) {
 };
 Trap.prototype.render = function (c) {
 
+	if (this.activated && this.closest[0]) {
+		c.save();
+		c.translate(this.x + this.w / 2, this.y + this.h / 2);
+		c.rotate(this.closest[2] + Math.PI * 1.5);
+		c.fillStyle = "hsl(40, 50%, 10%)";
+		c.strokeStyle = "#ff0";
+		c.beginPath();
+		c.moveTo(-5, 0);
+		c.lineTo(5, 0);
+		c.lineTo(0, -13);
+		c.fill();
+		c.stroke();
+
+		c.beginPath();
+		c.arc(0, 0, 5, 0, Math.PI * 2, true);
+		c.fill();
+		c.restore();
+	}
+
 	var grd = c.createLinearGradient(this.x + 10, this.y, this.x + 10, this.y + this.h);
 	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
 	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
@@ -52,16 +71,6 @@ Trap.prototype.render = function (c) {
 	c.fillStyle = "#a00";
 	c.fillRect(this.x, this.y + this.h - 3, this.w, 3);
 
-	if (this.activated && this.closest[0]) {
-		c.fillStyle = "#fff";
-		c.fillRect(this.x, this.y, 3, 3);
-		c.strokeStyle = "#fff";
-		c.lineWidth = 3;
-		c.beginPath();
-		c.moveTo(this.x - (Math.cos(this.closest[2]) * 15), this.y - (Math.sin(this.closest[2]) * 15));
-		c.lineTo(this.x, this.y);
-		c.stroke();
-	}
 
 };
 

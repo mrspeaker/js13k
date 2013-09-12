@@ -25,16 +25,15 @@ var GEN = {
 				for(x = 0; x < w; x++) {
 
 					off = x * 4 + (y * c.w * 4) + (tile * w * 4);
-					color = 0xff00ff;
 					br = 255 - ((Math.random() * 96) | 0);
 
 					switch (tile) {
 						case 5:
 						case 11:
 						case 12:
-							color = 0x715137;
+							color = COLOR.tile.dirt;
 							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
-								color = 0x6aaa40;
+								color = COLOR.tile.grass;
 							} else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
 								br = br * 2 / 3;
 							}
@@ -54,35 +53,35 @@ var GEN = {
 							}
 							break;
 						case 7:
-							color = 0x715137;
+							color = COLOR.tile.dirt;
 							break;
 						case 6:
-							color = 0x7f7f7f;
+							color = COLOR.tile.stone;
 							break;
 						case 1:
-							color = Math.random() < 0.15 ? 0x50D937 : -1;
+							color = Math.random() < 0.15 ? COLOR.tile.vine_leaves : -1;
 							if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
-								color = 0xe1c479;
+								color = COLOR.tile.vine_ladder;
 							}
 							break;
 						case 2:
 						case 3:
 						case 4:
-							color = 0x4b83c3;
+							color = COLOR.tile.water;
 							siny = y % 12 - ((tile-2)*4);
 							if (siny < 0) siny += 12;
 							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
-								color = 0xffffff;
+								color = COLOR.tile.water_splash;
 							}
 							break;
 						case 8:
 						case 9:
 						case 10:
-							color = 0xfe9b00;
+							color = COLOR.tile.lava;
 							siny = y % 4 - (tile - 8);
 							if (siny < 0) siny += 4;
 							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
-								color = 0xe12900;
+								color = COLOR.tile.lava_lines;
 							}
 							br = Math.min(255, br * 1.4);
 							break;
@@ -117,7 +116,7 @@ var GEN = {
 			charArray = chars.split(""),
 			sheet;
 
-		ctx.fillStyle = "#fff";
+		ctx.fillStyle = COLOR.font_main;
 		ctx.font = "24px courier new";
 
 		charArray.forEach(function (c, i) {
@@ -130,31 +129,29 @@ var GEN = {
 
 		 for (var row = 0; row < pixels.height; row++) {
 			for (var col = 0; col < pixels.width; col++) {
-				var co = (col / 2.5 | 0) * 2.5 | 0;
-				var ro = (row / 2.5 | 0) * 2.5 | 0;
+
+				var ro = Math.floor(row / 2) * 2;
+				var co = Math.floor(col / 2) * 2;
+
 				var sourcePixel = [
-					pixels.data[(ro * pixels.width + co) * 4 + 0],
-					pixels.data[(ro * pixels.width + co) * 4 + 1],
-					pixels.data[(ro * pixels.width + co) * 4 + 2],
-					pixels.data[(ro * pixels.width + co) * 4 + 3]
+					pixels.data[(ro * pixels.width + co) * 4 + 0] + pixels.data[(ro * pixels.width + co + 1) * 4 + 0] / 2,
+					pixels.data[(ro * pixels.width + co) * 4 + 1] + pixels.data[(ro * pixels.width + co + 1) * 4 + 1] / 2,
+					pixels.data[(ro * pixels.width + co) * 4 + 2] + pixels.data[(ro * pixels.width + co + 1) * 4 + 2] / 2,
+					pixels.data[(ro * pixels.width + co) * 4 + 3] + pixels.data[(ro * pixels.width + co + 1) * 4 + 3] / 2
 				];
 
-				if (sourcePixel[3] < 20) {
-					if (sourcePixel[3] > 100) {
-						sourcePixel[0] = 255;
-						sourcePixel[1] = 255;
-						sourcePixel[2] = 0;
-						sourcePixel[3] = 155
-					} else {
+				// if (sourcePixel[3] < 20) {
+				// 	if (sourcePixel[3] > 100) {
+				// 		sourcePixel[0] = 255;
+				// 		sourcePixel[1] = 255;
+				// 		sourcePixel[2] = 0;
+				// 		sourcePixel[3] = 155
+				// 	} else {
 
-						sourcePixel[3] = 0;
-					}
-				}
-				else sourcePixel[3] = 255;
-
-				//if (row % 2 === 0) {
-				//	sourcePixel[3] = 100;
-				//}
+				// 		sourcePixel[3] = 0;
+				// 	}
+				// }
+				// else sourcePixel[3] = 255;
 
 				for(var y = 0; y < scale; y++) {
 					var destRow = row * scale + y;
