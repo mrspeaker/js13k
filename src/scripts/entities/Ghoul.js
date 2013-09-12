@@ -8,6 +8,8 @@ var Ghoul = function () {
 	this.knockBack = 0;
 	this.xpValue = 5;
 	this.isAngry = false;
+	this.foreverAngry = false;
+	this.visible = true;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir, level) {
@@ -43,13 +45,14 @@ Ghoul.prototype.tick = function (map) {
 	var yo = 0,
 		xo = 0,
 		player;
+
 	if (!this.isAngry) {
 		yo = Math.sin(Date.now() / 100);
 		xo = this.speed * this.dir;
 	} else {
 		player = this.level.player;
 		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
-		if (dist < 300) {
+		if (this.foreverAngry || dist < 350) {
 			if (Math.abs(this.y - player.y) > 2) {
 				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
 			} else if (Math.abs(this.x - player.x) > 5) {
@@ -57,6 +60,7 @@ Ghoul.prototype.tick = function (map) {
 				xo = this.angrySpeed * this.dir;
 			}
 		}
+		yo += Math.sin(Date.now() / 100) / 2;
 
 	}
 
@@ -65,12 +69,20 @@ Ghoul.prototype.tick = function (map) {
 		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
 
+
 	if (!this.isAngry) {
-		this.move(xo, yo, map);
+		// Don't move if not visible - save coll detection on map
+		if (this.visible) {
+			this.move(xo, yo, map);
+		}
 	} else {
 		this.x += xo;
 		this.y += yo;
+		if (this.visible) {
+			this.foreverAngry = true;
+		}
 	}
+
 	return !(this.remove);
 };
 Ghoul.prototype.hitBlocks = function (x, y) {

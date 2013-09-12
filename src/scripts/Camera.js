@@ -105,11 +105,13 @@ var Camera = {
 			}, [])
 			// Remove out-of-view entites
 			.filter(function (r) {
-				return r.repeat || !(
+				var visible = r.repeat || !(
 					r.x + r.w < self.x ||
 					r.y + r.h < self.y ||
 					r.x > self.x + (self.w / self.zoom) ||
 					r.y > self.y + (self.h / self.zoom));
+				r.visible = visible;
+				return visible;
 			})
 			// Draw 'em
 			.forEach(function (r) {

@@ -2,8 +2,13 @@ js13k entry by Mr Speaker
 
 # TODO
 
+
+- title screen
+- re-start rooms
+- tutorial section
+
+
 - building anim
-- more rooms
 - more sfx
 - tune
 - death anims
