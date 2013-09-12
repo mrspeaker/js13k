@@ -158,7 +158,7 @@ Player.prototype.hit = function (e) {
 		return;
 	}
 	if (e instanceof Ghoul) {
-		this.killed();
+		this.killed(e);
 		return;
 	}
 
@@ -200,8 +200,8 @@ Player.prototype.isMoving = function () {
 	return Math.abs(this.vel[0]) > 0.3 || (!this.crouching && Math.abs(this.vel[1]) > 0.3)
 };
 
-Player.prototype.killed = function (spear) {
-	this.level.xp(-20);
+Player.prototype.killed = function (e) {
+	e && this.level.xp({xpValue:e.xpAttackValue});
 	this.x = this.checkpoint[0];
 	this.y = this.checkpoint[1];
 };
@@ -262,15 +262,15 @@ Player.prototype.render = function (c) {
 	c.shadowBlur = 0;
 
 	// draw checkpoint
-	var grd = c.createLinearGradient(this.checkpoint[0], this.checkpoint[1], this.checkpoint[0] + this.w, this.checkpoint[1] + this.h);
+	var grd = c.createLinearGradient(this.checkpoint[0] + game.tw / 2, this.checkpoint[1], this.checkpoint[0] + game.tw / 2, this.checkpoint[1] + game.th);
 	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
 	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
 	grd.addColorStop(1, "hsla(" + (Math.random() * 130 + 40 | 0) +", 100%, 50%, 1)");
 	c.fillStyle = grd;
-	c.fillRect(this.checkpoint[0], this.checkpoint[1], this.w, this.h - 3);
+	c.fillRect(this.checkpoint[0], this.checkpoint[1], game.tw, game.th - 3);
 
 	c.fillStyle = "#dd0";
-	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 6, this.w, 3);
+	c.fillRect(this.checkpoint[0], this.checkpoint[1] + game.th - 3, game.tw, 3);
 
 
 	this.projectiles.forEach(function (p) {

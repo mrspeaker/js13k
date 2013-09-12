@@ -112,7 +112,7 @@ var GEN = {
 
 		var ctx = utils.createCanvas(24 * 30, 24),
 			dbl = utils.createCanvas(24 * 30, 24),
-			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,/'",
+			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,/-+'",
 			charArray = chars.split(""),
 			sheet,
 			quart = function (i, pix, ro, co) {

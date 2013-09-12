@@ -1071,7 +1071,7 @@ Player.prototype.hit = function (e) {
 		return;
 	}
 	if (e instanceof Ghoul) {
-		this.killed();
+		this.killed(e);
 		return;
 	}
 

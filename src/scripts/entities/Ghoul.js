@@ -7,8 +7,11 @@ var Ghoul = function () {
 	this.life = 3;
 	this.knockBack = 0;
 	this.xpValue = 5;
+	this.xpAttackValue = -20;
+
 	this.isAngry = false;
 	this.foreverAngry = false;
+
 	this.visible = false;
 	this.notVisibleFor = 0;
 };
@@ -35,7 +38,7 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.knockBack = e.dir === this.dir ? 5 * e.dir : -12 * this.dir;
+		this.knockBack = e.dir === this.dir ? 3 * e.dir : -7 * this.dir;
 		if(this.life-- <= 0) {
 			this.level.xp(this);
 			this.remove = true;
@@ -59,7 +62,7 @@ Ghoul.prototype.tick = function (map) {
 	}
 
 	if (!this.isAngry) {
-		yo = Math.sin(Date.now() / 100);
+		yo = Math.sin(Date.now() / 100	);
 		xo = this.speed * this.dir;
 	} else {
 		player = this.level.player;
