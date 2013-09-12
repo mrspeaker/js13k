@@ -27,5 +27,6 @@ Piece.prototype.render = function (c) {
 	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
 	c.fill();
 	c.stroke();
+
 };
 

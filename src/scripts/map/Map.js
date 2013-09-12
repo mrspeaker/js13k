@@ -12,16 +12,18 @@
 
 			this.sheet = sheet;
 			this.camera = camera;
+			this.walkable = BLOCKS.walkable;
 
 			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
-			this.pickups = this.addPickups();
-			this.pieces = this.addPieces();
 
-			this.walkable = BLOCKS.walkable;
 			this.cellH = this.cells.length;
 			this.cellW = this.cells[0].length;
 			this.h = this.cellH * sheet.h;
 			this.w = this.cellW * sheet.w;
+
+			this.pickups = this.addPickups();
+			this.pieces = this.addPieces();
+
 
 			this.camera.setBounds(this.w, this.h);
 
@@ -71,15 +73,36 @@
 
 		},
 
+		findFreeBlock: function () {
+			var x,
+				y,
+				cell = this.walkable + 1;
+
+			while (cell > this.walkable) {
+
+				x = Math.random() * this.cells[0].length | 0;
+				y = Math.random() * this.cells.length | 0;
+
+				cell = this.cells[y][x];
+
+			}
+
+			return [x, y];
+		},
+
 		addPickups: function () {
 
-			var pickup = [];
+			var pickup = [],
+				i,
+				pos;
 
-			for (var i = 0; i < 60; i++) {
+			for (i = 0; i < 60; i++) {
+
+				pos = this.findFreeBlock();
 
 				pickup.push([
-					Math.random() * this.cells[0].length | 0,
-					Math.random() * this.cells.length | 0
+					pos[0],
+					pos[1]
 				]);
 
 			}
@@ -90,13 +113,16 @@
 
 		addPieces: function () {
 
-			var pieces = [];
+			var pieces = [],
+				pos;
 
 			for (var i = 0; i < 4; i++) {
 
+				pos = this.findFreeBlock();
+
 				pieces.push([
-					Math.random() * this.cells[0].length | 0,
-					Math.random() * this.cells.length | 0
+					pos[0],
+					pos[1]
 				]);
 
 			}

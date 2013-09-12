@@ -71,6 +71,5 @@ Trap.prototype.render = function (c) {
 	c.fillStyle = "#a00";
 	c.fillRect(this.x, this.y + this.h - 3, this.w, 3);
 
-
 };
 

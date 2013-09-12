@@ -105,7 +105,7 @@ Player.prototype.tick = function (input, map) {
 		this.acc[0] += speed;
 		this.dir = 1;
 	}
-	if (input.pressed("fire")) {
+	if (input.pressed("fire") && !this.crouching) {
 		this.projectiles.push(
 			new Spear().init(this.x, this.y, this.dir)
 		);
@@ -117,6 +117,10 @@ Player.prototype.tick = function (input, map) {
 	this.wasFalling = this.falling;
 	this.move(this.xo, this.yo, map);
 	this.checkBlocks(input, map);
+
+	if (this.onLadder) {
+		this.crouching = false;
+	}
 
 };
 
@@ -249,9 +253,17 @@ Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;
 
-	c.fillStyle = "#900";
-	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 4, this.w, 4);
 	// draw checkpoint
+	var grd = c.createLinearGradient(this.checkpoint[0], this.checkpoint[1], this.checkpoint[0] + this.w, this.checkpoint[1] + this.h);
+	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(1, "hsla(" + (Math.random() * 130 + 40 | 0) +", 100%, 50%, 1)");
+	c.fillStyle = grd;
+	c.fillRect(this.checkpoint[0], this.checkpoint[1], this.w, this.h - 3);
+
+	c.fillStyle = "#dd0";
+	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 6, this.w, 3);
+
 
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
