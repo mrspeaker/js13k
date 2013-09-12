@@ -201,6 +201,7 @@ Player.prototype.isMoving = function () {
 };
 
 Player.prototype.killed = function (spear) {
+	this.level.xp(-20);
 	this.x = this.checkpoint[0];
 	this.y = this.checkpoint[1];
 };

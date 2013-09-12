@@ -9,7 +9,8 @@ var Ghoul = function () {
 	this.xpValue = 5;
 	this.isAngry = false;
 	this.foreverAngry = false;
-	this.visible = true;
+	this.visible = false;
+	this.notVisibleFor = 0;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir, level) {
@@ -17,6 +18,9 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 	this.y = y;
 
 	this.level = level;
+
+	this.speed = Math.random() + 0.6;
+	this.angrySpeed = Math.random() * 0.5 + 1.2;
 
 	this.dir = dir || 1;
 
@@ -37,7 +41,7 @@ Ghoul.prototype.hit = function (e) {
 			this.remove = true;
 		}
 	}
-	if (e instanceof Trap) {
+	if (e instanceof Trap || e instanceof Player) {
 		this.remove = true;
 	}
 };
@@ -45,6 +49,14 @@ Ghoul.prototype.tick = function (map) {
 	var yo = 0,
 		xo = 0,
 		player;
+
+	if (!this.visible) {
+		if (this.notVisibleFor ++ > 2000) {
+			return false;
+		}
+	} else {
+		this.notVisibleFor = 0;
+	}
 
 	if (!this.isAngry) {
 		yo = Math.sin(Date.now() / 100);
@@ -107,7 +119,7 @@ Ghoul.prototype.render = function (c) {
 	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
-	c.fillStyle = "hsl(120, 40%, 50%)";
+	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
 	c.strokeRect(this.x + 2, this.y +20, 8, 3);
 	c.fillRect(this.x + 4, this.y + 11, 3, 5);

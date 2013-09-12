@@ -3,6 +3,7 @@ var Camera = {
 	y: 0,
 	xRange: 80,
 	yRange: 100,
+	zoom: 1,
 	init: function (entity, x, y, w, h) {
 
 		this.entity = entity;
