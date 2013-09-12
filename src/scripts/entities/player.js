@@ -116,6 +116,12 @@ Player.prototype.tick = function (input, map) {
 
 	this.wasFalling = this.falling;
 	this.move(this.xo, this.yo, map);
+
+	if (this.x < 5) this.x = 5;
+	if (this.y < -3) this.y = -3;
+	if (this.x > map.w - 5) this.x = map.w -5;
+
+
 	this.checkBlocks(input, map);
 
 	if (this.onLadder) {

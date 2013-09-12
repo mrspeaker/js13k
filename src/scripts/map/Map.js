@@ -42,6 +42,8 @@
 				}
 			}
 
+			roomMap[0][0] = 1;
+
 			return roomMap;
 		},
 
