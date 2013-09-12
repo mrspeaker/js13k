@@ -1,6 +1,22 @@
 /*
 	js13k game by Mr Speaker
 */
+var COLOR = {
+	"back_main":"#4b5d70",
+	"font_main":"#ffffff",
+	"tile":{
+		"dirt":"0x6b4d35",
+		"grass":"0x6aaa40",
+		"stone":"0x8f8c8d",
+		"water_splash":"0xffffff",
+		"water":"0x2781e8",
+		"lava_lines":"0xe12900",
+		"lava":"0xfe9b00",
+		"vine_leaves":"0x23b908",
+		"vine_ladder":"0xdea207"
+	}
+};
+
 var utils = {
 	snap: function(value, snapSize) {
 
@@ -1034,10 +1050,12 @@ Ghoul.prototype.hit = function (e) {
 		if(this.life-- <= 0) {
 			this.level.xp(this);
 			this.remove = true;
+			this.level.explode(this.x + this.w / 2, this.y + this.h);
 		}
 	}
 	if (e instanceof Trap || e instanceof Player) {
 		this.remove = true;
+		this.level.explode(this.x + this.w / 2, this.y + this.h);
 	}
 };
 Ghoul.prototype.tick = function (map) {
@@ -1121,7 +1139,66 @@ Ghoul.prototype.render = function (c) {
 	c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
 
 
-};var Player = function() {
+};var Pickup = function (){
+	this.w = 20;
+	this.h = 24;
+	this.xpValue = 3;
+};
+Pickup.prototype = new Entity;
+Pickup.prototype.init = function (x, y) {
+	this.x = x;
+	this.y = y;
+
+	return this;
+}
+Pickup.prototype.tick = function (map) {
+	return !(this.remove);
+};
+Pickup.prototype.hit = function (e) {};
+Pickup.prototype.render = function (c) {
+	c.strokeStyle = "#000";
+	c.fillStyle = "#a00";
+	c.lineWidth = 2;
+	c.beginPath();
+	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
+	c.fill();
+	c.stroke();
+
+};
+
+var Piece = function (){
+	this.w = 20;
+	this.h = 24;
+	this.xpValue = 11;
+};
+Piece.prototype = new Entity;
+Piece.prototype.init = function (x, y, id) {
+	this.x = x;
+	this.y = y;
+	this.id = id;
+
+	return this;
+}
+Piece.prototype.tick = function (map) {
+	return !(this.remove);
+};
+Piece.prototype.hit = function (e) {};
+Piece.prototype.render = function (c) {
+	c.shadowColor =  "hsl(70, 100%, 50%)";
+    c.shadowOffsetX = 0;
+    c.shadowOffsetY = 0;
+    c.shadowBlur = 10;
+
+	c.strokeStyle = "#ff0";
+	c.fillStyle = "#aa0";
+	c.beginPath();
+	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
+	c.fill();
+	c.stroke();
+
+};
+
+var Player = function() {
 	this.w = 12;
 	this.h = 23;
 	this.xp = 0;
@@ -1142,9 +1219,13 @@ Ghoul.prototype.render = function (c) {
 	this.trapLaunch = -1;
 	this.crouching = false;
 
+	this.deaded = false;
+	this.jumpHeight = -game.th - 1;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
+
 	this.x = x;
 	this.y = y;
 	this.level = level;
@@ -1171,6 +1252,11 @@ Player.prototype.complete = function () {
 };
 Player.prototype.tick = function (input, map) {
 
+	if (this.deaded) {
+		this.tickDead(input, map);
+		return;
+	}
+
 	var speed = 0.9;
 
 	this.projectiles = this.projectiles.filter(function (p) {
@@ -1186,9 +1272,7 @@ Player.prototype.tick = function (input, map) {
 		} else {
 			if (!this.falling && !this.wasFalling) {
 				audio.sfx.jump();
-				this.acc[1] = -map.sheet.h - 1;
-				this.vel[1] = 0;
-				this.falling = true;
+				this.jump();
 			}
 		}
 	}
@@ -1253,6 +1337,27 @@ Player.prototype.tick = function (input, map) {
 	}
 
 };
+Player.prototype.jump = function () {
+	this.acc[1] = this.jumpHeight;
+	this.vel[1] = 0;
+	this.falling = true;
+};
+Player.prototype.tickDead = function () {
+	var dx = this.x - this.checkpoint[0],
+		dy = this.y - this.checkpoint[1],
+		deadSpeed = 10;
+
+	if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+		this.x = this.checkpoint[0];
+		this.y = this.checkpoint[1];
+		this.jump();
+		this.deaded = false;
+	}
+
+	this.x += this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed;
+	this.y += this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed;
+
+};
 
 Player.prototype.tickVelocity = function () {
 	this.grav = Math.min(this.falling ? this.grav + 0.23 : 0, 2.3);
@@ -1268,6 +1373,7 @@ Player.prototype.tickVelocity = function () {
 	this.xo += this.vel[0];
 	this.yo += this.vel[1];
 };
+
 Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
@@ -1325,8 +1431,8 @@ Player.prototype.isMoving = function () {
 
 Player.prototype.killed = function (e) {
 	e && this.level.xp({xpValue:e.xpAttackValue});
-	this.x = this.checkpoint[0];
-	this.y = this.checkpoint[1];
+	this.level.explode(this.x + this.w / 2, this.y + this.h);
+	this.deaded = true;
 };
 Player.prototype.hitBlocks = function (x, y) {
 
@@ -1528,62 +1634,78 @@ Spear.prototype.render = function (c) {
 
 };
 
-var Pickup = function (){
+var Trap = function (){
 	this.w = 20;
-	this.h = 24;
-	this.xpValue = 3;
+	this.h = 48;
+	this.x = 0;
+	this.y = 0;
+	this.life = 5;
+	this.closest = null;
+	this.activated = false;
 };
-Pickup.prototype = new Entity;
-Pickup.prototype.init = function (x, y) {
+Trap.prototype = new Entity;
+Trap.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
 	return this;
 }
-Pickup.prototype.tick = function (map) {
+Trap.prototype.tick = function (map) {
 	return !(this.remove);
 };
-Pickup.prototype.hit = function (e) {};
-Pickup.prototype.render = function (c) {
-	c.strokeStyle = "#000";
+Trap.prototype.hit = function (e) {
+	if (e instanceof Ghoul) {
+		this.activated = true;
+		if (--this.life === 0) {
+			this.remove = true;
+		}
+	}
+};
+Trap.prototype.setClosestPiece = function (pieces) {
+	var self = this;
+	this.closest = pieces.reduce(function (acc, p) {
+		var dist = utils.dist([self.x, self.y], [p.x, p.y]),
+			angle = utils.angleBetween(self, p);
+
+		angle %= Math.PI * 2;
+   		if (angle < 0) angle += Math.PI * 2;
+
+		if (!acc[0] || dist < acc[1]) {
+			return [p, dist, angle];
+		}
+		return acc;
+	}, [null, -1, -1]);
+};
+Trap.prototype.render = function (c) {
+
+	if (this.activated && this.closest[0]) {
+		c.save();
+		c.translate(this.x + this.w / 2, this.y + this.h / 2);
+		c.rotate(this.closest[2] + Math.PI * 1.5);
+		c.fillStyle = "hsl(40, 50%, 10%)";
+		c.strokeStyle = "#ff0";
+		c.beginPath();
+		c.moveTo(-5, 0);
+		c.lineTo(5, 0);
+		c.lineTo(Math.sin(Date.now() / 350) * 2.4, -14);
+		c.fill();
+		c.stroke();
+
+		c.beginPath();
+		c.arc(0, 0, 5, 0, Math.PI * 2, true);
+		c.fill();
+		c.restore();
+	}
+
+	var grd = c.createLinearGradient(this.x + 10, this.y, this.x + 10, this.y + this.h);
+	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(1, "hsla(" + (Math.random() * 20 + 40 | 0) +", 100%, 50%, " + (this.life / 5) + ")");
+	c.fillStyle = grd;
+	c.fillRect(this.x, this.y, this.w, this.h);
+
 	c.fillStyle = "#a00";
-	c.lineWidth = 2;
-	c.beginPath();
-	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
-	c.fill();
-	c.stroke();
-
-};
-
-var Piece = function (){
-	this.w = 20;
-	this.h = 24;
-	this.xpValue = 11;
-};
-Piece.prototype = new Entity;
-Piece.prototype.init = function (x, y, id) {
-	this.x = x;
-	this.y = y;
-	this.id = id;
-
-	return this;
-}
-Piece.prototype.tick = function (map) {
-	return !(this.remove);
-};
-Piece.prototype.hit = function (e) {};
-Piece.prototype.render = function (c) {
-	c.shadowColor =  "hsl(70, 100%, 50%)";
-    c.shadowOffsetX = 0;
-    c.shadowOffsetY = 0;
-    c.shadowBlur = 10;
-
-	c.strokeStyle = "#ff0";
-	c.fillStyle = "#aa0";
-	c.beginPath();
-	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
-	c.fill();
-	c.stroke();
+	c.fillRect(this.x, this.y + this.h - 3, this.w, 3);
 
 };
 
@@ -1801,10 +1923,11 @@ Screen.level = {
 
 		this.particles = [];
 
-		this.p = new Particle().init({});
-		this.particles.push(
-			this.p
-		);
+		for (var i = 0; i < 5; i++) {
+			this.particles.push(
+				new Particle().init({})
+			)
+		}
 
 		return this;
 	},
@@ -1824,8 +1947,6 @@ Screen.level = {
 		this.particles.forEach(function (p) {
 			return p.tick();
 		});
-
-		if (Math.random() < 0.01) this.p.play(20, 20);
 
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
@@ -1855,16 +1976,37 @@ Screen.level = {
 
 		utils.checkCollisions([this.ghouls, this.player.projectiles]);
 		utils.checkCollisions([this.ghouls, this.player.traps]);
-		utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
-		utils.checkCollision(this.player, this.pieces);
-		utils.checkCollision(this.player, this.pickups);
-		utils.checkCollision(this.player, this.ghouls);
+
+		if (!this.player.deaded) {
+			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+			utils.checkCollision(this.player, this.pieces);
+			utils.checkCollision(this.player, this.pickups);
+			utils.checkCollision(this.player, this.ghouls);
+		}
 	},
 
 
 	xp: function (e) {
 
 		this.player.xp += e.xpValue;
+
+	},
+
+	explode: function (x, y) {
+
+		var played = false;
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			if (!p.running) {
+				p.play(x, y);
+				played = true;
+			}
+			break;
+		}
+
+		if (!played) {
+			this.particles[0].play(x, y);
+		}
 
 	},
 

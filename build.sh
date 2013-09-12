@@ -14,6 +14,7 @@ echo "${header}" | \
 
 cat - \
 \
+src/scripts/color.js \
 src/scripts/utils.js \
 src/scripts/audio/audio.js \
 src/scripts/Particles.js \
@@ -23,15 +24,16 @@ src/scripts/map/Sheet.js \
 src/scripts/map/Map.js \
 src/scripts/entities/Entity.js \
 src/scripts/entities/Ghoul.js \
-src/scripts/entities/Player.js \
-src/scripts/entities/Spear.js \
 src/scripts/entities/Pickup.js \
 src/scripts/entities/Piece.js \
+src/scripts/entities/Player.js \
+src/scripts/entities/Spear.js \
+src/scripts/entities/Trap.js \
 src/scripts/Camera.js \
 src/scripts/screens/Dialog.js \
 src/scripts/screens/title.js \
 src/scripts/screens/level.js \
-src/scripts/input.js \
+src/scripts/Input.js \
 src/scripts/game.js \
 \
 > build/js13k.js
