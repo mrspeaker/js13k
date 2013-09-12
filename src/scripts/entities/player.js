@@ -17,6 +17,7 @@ var Player = function() {
 	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
+	this.crouching = false;
 
 };
 Player.prototype = new Entity;
@@ -68,7 +69,13 @@ Player.prototype.tick = function (input, map) {
 			}
 		}
 	}
+	if (input.wasDown("down")) {
+		this.crouching = false;
+	}
 	if (input.isDown("down")) {
+		if (!this.falling) {
+			this.crouching = true;
+		}
 		if (input.isDown("fire") && this.numTraps > 0) {
 			if (this.trapLaunch < 0) {
 				this.trapLaunch = 20;
@@ -179,7 +186,7 @@ Player.prototype.hitSpear = function (spear) {
 };
 
 Player.prototype.isMoving = function () {
-	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
+	return Math.abs(this.vel[0]) > 0.3 || (!this.crouching && Math.abs(this.vel[1]) > 0.3)
 };
 
 Player.prototype.killed = function (spear) {
@@ -263,9 +270,10 @@ Player.prototype.render = function (c) {
 	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
 	c.fillStyle = "hsl(20, 30%, 40%)";
+
 	if (!this.onLadder) {
-		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + (this.crouching * 4), 6, 10);
+		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + (this.crouching * 4), 6, 10);
 	} else {
 		c.fillRect(this.x + 3, this.y + this.offs.headY, 6, 10);
 		c.strokeRect(this.x + 3, this.y + this.offs.headY, 6, 10);
