@@ -6,6 +6,7 @@ var Input = {
 		39: { wasDown: false, isDown: false },
 		40: { wasDown: false, isDown: false },
 		32: { wasDown: false, isDown: false },
+		13: { wasDown: false, isDown: false }
 	},
 
 	actions: {
@@ -13,7 +14,8 @@ var Input = {
 		"right": 39,
 		"down": 40,
 		"left": 37,
-		"fire": 32
+		"fire": 32,
+		"escape": 13
 	},
 
 	init: function () {

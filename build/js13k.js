@@ -860,7 +860,7 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.knockBack = e.dir === this.dir ? 5 * e.dir : -12 * this.dir;
+		this.knockBack = e.dir === this.dir ? 2 * e.dir : -6 * this.dir;
 		if(this.life-- <= 0) {
 			this.level.xp(this);
 			this.remove = true;
@@ -880,7 +880,7 @@ Ghoul.prototype.tick = function (map) {
 	} else {
 		player = this.level.player;
 		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
-		if (dist < 300) {
+		if (dist < 400) {
 			if (Math.abs(this.y - player.y) > 2) {
 				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
 			} else if (Math.abs(this.x - player.x) > 5) {

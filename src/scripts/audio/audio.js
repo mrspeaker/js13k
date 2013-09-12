@@ -108,6 +108,28 @@
 
 				o.start(0);
 				o.stop(now + 0.12);
+			},
+
+			swiggle: function () {
+				var now = c.currentTime;
+				var o = c.createOscillator();
+				var f = c.createBiquadFilter();
+				var g = c.createGain();
+				o.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
+				g.gain.value = 0.05;
+				f.frequency.value = 3000;
+				f.Q.value = 10;
+
+				o.type = "square"
+				o.frequency.value = 0;
+				o.frequency.setValueAtTime(50, now);
+				o.frequency.linearRampToValueAtTime(600, now + 0.32);
+
+				o.start(0);
+				o.stop(now + 0.32);
 			}
 		},
 

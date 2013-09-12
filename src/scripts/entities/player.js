@@ -79,6 +79,7 @@ Player.prototype.tick = function (input, map) {
 		if (input.isDown("fire") && this.numTraps > 0) {
 			if (this.trapLaunch < 0) {
 				this.trapLaunch = 20;
+				audio.sfx.swiggle();
 			} else {
 				if (--this.trapLaunch === -1) {
 					this.trapLaunch = 1000; // TODO: just release fire button.
