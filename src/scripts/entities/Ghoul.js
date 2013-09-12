@@ -78,7 +78,8 @@ Ghoul.prototype.hitBlocks = function (x, y) {
 };
 Ghoul.prototype.render = function (c) {
 
-	c.strokeStyle = "hsl(70, 100%, 50%)";
+	c.strokeStyle = "#000";
+	c.lineWidth = 2;
 
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
@@ -87,15 +88,17 @@ Ghoul.prototype.render = function (c) {
 
 	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
 	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
-	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+
 
 	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-	//c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
 
 	c.fillStyle = "hsl(120, 40%, 50%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
-
+	c.strokeRect(this.x + 2, this.y +20, 8, 3);
 	c.fillRect(this.x + 4, this.y + 11, 3, 5);
+
 
 };

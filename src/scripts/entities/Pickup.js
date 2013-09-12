@@ -17,6 +17,7 @@ Pickup.prototype.hit = function (e) {};
 Pickup.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.fillStyle = "#a00";
+	c.lineWidth = 2;
 	c.beginPath();
 	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
 	c.fill();

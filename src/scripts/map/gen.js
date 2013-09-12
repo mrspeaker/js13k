@@ -114,7 +114,13 @@ var GEN = {
 			dbl = utils.createCanvas(24 * 30, 24),
 			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,/'",
 			charArray = chars.split(""),
-			sheet;
+			sheet,
+			quart = function (i, pix, ro, co) {
+				return pix.data[(ro * pix.width + co) * 4 + i] +
+					pix.data[(ro * pix.width + co + 1) * 4 + i] +
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] +
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4
+			}
 
 		ctx.fillStyle = COLOR.font_main;
 		ctx.font = "24px courier new";
@@ -134,24 +140,11 @@ var GEN = {
 				var co = Math.floor(col / 2) * 2;
 
 				var sourcePixel = [
-					pixels.data[(ro * pixels.width + co) * 4 + 0] + pixels.data[(ro * pixels.width + co + 1) * 4 + 0] / 2,
-					pixels.data[(ro * pixels.width + co) * 4 + 1] + pixels.data[(ro * pixels.width + co + 1) * 4 + 1] / 2,
-					pixels.data[(ro * pixels.width + co) * 4 + 2] + pixels.data[(ro * pixels.width + co + 1) * 4 + 2] / 2,
-					pixels.data[(ro * pixels.width + co) * 4 + 3] + pixels.data[(ro * pixels.width + co + 1) * 4 + 3] / 2
+					quart(0, pixels, ro, co),
+					quart(1, pixels, ro, co),
+					quart(2, pixels, ro, co),
+					quart(3, pixels, ro, co)
 				];
-
-				// if (sourcePixel[3] < 20) {
-				// 	if (sourcePixel[3] > 100) {
-				// 		sourcePixel[0] = 255;
-				// 		sourcePixel[1] = 255;
-				// 		sourcePixel[2] = 0;
-				// 		sourcePixel[3] = 155
-				// 	} else {
-
-				// 		sourcePixel[3] = 0;
-				// 	}
-				// }
-				// else sourcePixel[3] = 255;
 
 				for(var y = 0; y < scale; y++) {
 					var destRow = row * scale + y;

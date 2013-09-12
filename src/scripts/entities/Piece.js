@@ -19,7 +19,7 @@ Piece.prototype.render = function (c) {
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
     c.shadowOffsetY = 0;
-    c.shadowBlur    = 10;
+    c.shadowBlur = 10;
 
 	c.strokeStyle = "#ff0";
 	c.fillStyle = "#aa0";
