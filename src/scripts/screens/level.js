@@ -16,6 +16,13 @@ Screen.level = {
 		});
 		this.ghouls = [];
 
+		this.particles = [];
+
+		this.p = new Particle().init({});
+		this.particles.push(
+			this.p
+		);
+
 		return this;
 	},
 
@@ -31,6 +38,11 @@ Screen.level = {
 		this.pieces = this.pieces.filter(function (p) {
 			return p.tick();
 		});
+		this.particles.forEach(function (p) {
+			return p.tick();
+		});
+
+		if (Math.random() < 0.01) this.p.play(20, 20);
 
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
@@ -111,7 +123,8 @@ Screen.level = {
 			this.pickups,
 			this.pieces,
 			this.ghouls,
-			this.player
+			this.player,
+			this.particles
 		]);
 
 		game.res.font(c, "GRAIL: " + this.player.complete() + "/4", 20, 20);

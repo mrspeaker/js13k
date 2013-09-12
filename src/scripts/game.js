@@ -18,8 +18,6 @@ var game = {
 		this.reset();
 		this.run();
 
-		COLORTEST.ui();
-		COLORTEST.update();
 	},
 
 	setScreen: function (screen) {

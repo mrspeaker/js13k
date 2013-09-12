@@ -1,7 +1,6 @@
 (function () {
 
-	var rooms,
-		roomMap;
+	var rooms;
 
 	window.Map = {
 
@@ -168,7 +167,6 @@
 			var tw = game.tw,
 				th = game.th,
 				cellW = this.sheet.cellW,
-				cellH = this.sheet.cellH,
 				stx = this.camera.x / tw | 0,
 				sty = this.camera.y / th | 0,
 				endx = stx + (this.camera.w / tw | 0) + 1,

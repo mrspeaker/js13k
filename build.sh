@@ -16,6 +16,7 @@ cat - \
 \
 src/scripts/utils.js \
 src/scripts/audio/audio.js \
+src/scripts/Particles.js \
 src/scripts/map/gen.js \
 src/scripts/map/BLOCKS.js \
 src/scripts/map/Sheet.js \

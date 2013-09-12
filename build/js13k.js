@@ -8,18 +8,9 @@ var utils = {
 
 	},
 
-	anim: function (sfunc, efunc, cb) {
-
-		return function () {
-			// ticks
-		}
-
-	},
-
 	checkCollision: function (entity, entities, cbName) {
 
 		var i,
-			j,
 			a = entity,
 			b,
 			ax,
@@ -134,6 +125,23 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 	  // this.osc.start(0);
 	}
 
+	function envelope(gain, time, volume, duration, a, d, s, r) {
+        gain.gain.cancelScheduledValues(0);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(volume, time + a);
+        gain.gain.linearRampToValueAtTime(volume * s, time + a + d);
+        gain.gain.setValueAtTime(volume * s, time + a + d + duration);
+        gain.gain.linearRampToValueAtTime(0, time + a + d + duration + r);
+    }
+
+    // trigger: function(time) {
+    //     this.noise.start(time, 1);
+    //     envelope(this.noise.gain, time, this.volume, 0.05,
+    //     0.01, 0.03, 0.25, this.release);
+    //     this.noise.filter.frequency.setValueAtTime(this.freqFrom, time);
+    //     this.noise.filter.frequency.linearRampToValueAtTime(this.freqTo, time + 0.1);
+    // }
+
 	function noise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
 			data = buf.getChannelData(0);
@@ -177,19 +185,21 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			shoot: function () {
 				var now = c.currentTime;
 				var s = noise();
-
 				var f = c.createBiquadFilter();
-
-				f.connect(audio.master);
-				f.Q.value = 20;
+				var g = c.createGain();
+				g.gain.value = 0.12;
 				var start = Math.random() * 2000 + 500 | 0;
+
+				f.Q.value = 10;
 				f.frequency.value = start;
 				f.frequency.setValueAtTime(start, now);
-				f.frequency.linearRampToValueAtTime(100, now + 0.02);
+				f.frequency.linearRampToValueAtTime(6000, now + 0.04);
 
 				s.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
 
-				s.start(0);
+				s.start(now, 0.04);
 				s.stop(now + 0.04);
 			},
 
@@ -213,6 +223,28 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 				o.start(0);
 				o.stop(now + 0.12);
+			},
+
+			swiggle: function () {
+				var now = c.currentTime;
+				var o = c.createOscillator();
+				var f = c.createBiquadFilter();
+				var g = c.createGain();
+				o.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
+				g.gain.value = 0.05;
+				f.frequency.value = 3000;
+				f.Q.value = 10;
+
+				o.type = "square"
+				o.frequency.value = 0;
+				o.frequency.setValueAtTime(50, now);
+				o.frequency.linearRampToValueAtTime(600, now + 0.32);
+
+				o.start(0);
+				o.stop(now + 0.32);
 			}
 		},
 
@@ -245,6 +277,121 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 }());
 
+(function () {
+
+	var Particle = function () {
+
+		this.particles =  null;
+		this.running = false;
+
+	}
+
+	Particle.prototype = {
+
+		init: function (opts, cb) {
+
+			this.maxLife = opts.life || 40;
+			this.life = this.maxLife;
+			this.cb = cb;
+			this.col = opts.col || "100, 0, 0";
+
+			this.particles = [];
+			for(var i = 0; i < 20; i++) {
+				this.particles.push(
+					new Part({col: this.col}, this)
+				);
+			}
+
+			return this;
+		},
+
+		play: function (x, y) {
+
+			this.life = this.maxLife;
+			this.x = x;
+			this.y = y;
+			this.running = true;
+			this.particles.forEach(function (p) {
+				p.reset();
+			});
+
+		},
+
+		tick: function () {
+
+			if (!this.running) {
+				return;
+			}
+
+			this.life -= 1;
+
+			this.particles.forEach(function (p) {
+				p.tick();
+			});
+
+			if (this.life < 0) {
+				this.running = false;
+				this.cb && this.cb();
+			}
+
+		},
+
+		render: function (gfx) {
+
+			var self = this;
+
+			if (!this.running) {
+				return;
+			}
+
+			this.particles.forEach(function (p) {
+				p.render(gfx, self.x, self.y);
+			});
+
+		}
+
+	});
+
+	function Part (opts, parent) {
+		this.parent = parent;
+		this.x = 0;
+		this.y = 0;
+		this.w = 4;
+		this.h = 4;
+		this.col = opts.col;
+		this.xSpeed = Math.random() * 2 - 1;
+		this.ySpeed = Math.random() * 2 - 1 - 1;
+	}
+	Part.prototype = {
+
+		reset: function () {
+			this.life = this.parent.maxLife;
+			this.x = 0;
+			this.y = 0;
+			this.xSpeed = Math.random() * 2 - 1;
+			this.ySpeed = Math.random() * 2 - 1 - 3;
+		},
+
+		tick: function () {
+			this.x += this.xSpeed;
+			this.y += this.ySpeed;
+			this.ySpeed += 0.2;
+		},
+
+		render: function (gfx, x, y) {
+
+			var c = gfx.ctx;
+
+			c.fillStyle = "rgba(" + this.col + ", " + (0.3 + this.parent.life / this.parent.maxLife) + ")";
+			c.fillRect(this.x + x, this.y + y, this.w, this.h);
+
+		}
+
+	};
+
+	window.Particle = Particle;
+
+}());
 var GEN = {
 	tiles: function (w, h) {
 
@@ -272,16 +419,15 @@ var GEN = {
 				for(x = 0; x < w; x++) {
 
 					off = x * 4 + (y * c.w * 4) + (tile * w * 4);
-					color = 0xff00ff;
 					br = 255 - ((Math.random() * 96) | 0);
 
 					switch (tile) {
 						case 5:
 						case 11:
 						case 12:
-							color = 0x715137;
+							color = COLOR.tile.dirt;
 							if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
-								color = 0x6aaa40;
+								color = COLOR.tile.grass;
 							} else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
 								br = br * 2 / 3;
 							}
@@ -301,35 +447,35 @@ var GEN = {
 							}
 							break;
 						case 7:
-							color = 0x715137;
+							color = COLOR.tile.dirt;
 							break;
 						case 6:
-							color = 0x7f7f7f;
+							color = COLOR.tile.stone;
 							break;
 						case 1:
-							color = Math.random() < 0.15 ? 0x50D937 : -1;
+							color = Math.random() < 0.15 ? COLOR.tile.vine_leaves : -1;
 							if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
-								color = 0xe1c479;
+								color = COLOR.tile.vine_ladder;
 							}
 							break;
 						case 2:
 						case 3:
 						case 4:
-							color = 0x4b83c3;
+							color = COLOR.tile.water;
 							siny = y % 12 - ((tile-2)*4);
 							if (siny < 0) siny += 12;
 							if (Math.abs(Math.sin(x / 2) * 5| 0) === siny) {
-								color = 0xffffff;
+								color = COLOR.tile.water_splash;
 							}
 							break;
 						case 8:
 						case 9:
 						case 10:
-							color = 0xfe9b00;
+							color = COLOR.tile.lava;
 							siny = y % 4 - (tile - 8);
 							if (siny < 0) siny += 4;
 							if (Math.abs(Math.sin(x / 2) * 2| 0) === siny) {
-								color = 0xe12900;
+								color = COLOR.tile.lava_lines;
 							}
 							br = Math.min(255, br * 1.4);
 							break;
@@ -360,11 +506,17 @@ var GEN = {
 
 		var ctx = utils.createCanvas(24 * 30, 24),
 			dbl = utils.createCanvas(24 * 30, 24),
-			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,/'",
+			chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!?.:;,'/-+'",
 			charArray = chars.split(""),
-			sheet;
+			sheet,
+			quart = function (i, pix, ro, co) {
+				return pix.data[(ro * pix.width + co) * 4 + i] +
+					pix.data[(ro * pix.width + co + 1) * 4 + i] +
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] +
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4
+			}
 
-		ctx.fillStyle = "#fff";
+		ctx.fillStyle = COLOR.font_main;
 		ctx.font = "24px courier new";
 
 		charArray.forEach(function (c, i) {
@@ -377,31 +529,16 @@ var GEN = {
 
 		 for (var row = 0; row < pixels.height; row++) {
 			for (var col = 0; col < pixels.width; col++) {
-				var co = (col / 2.5 | 0) * 2.5 | 0;
-				var ro = (row / 2.5 | 0) * 2.5 | 0;
+
+				var ro = Math.floor(row / 2) * 2;
+				var co = Math.floor(col / 2) * 2;
+
 				var sourcePixel = [
-					pixels.data[(ro * pixels.width + co) * 4 + 0],
-					pixels.data[(ro * pixels.width + co) * 4 + 1],
-					pixels.data[(ro * pixels.width + co) * 4 + 2],
-					pixels.data[(ro * pixels.width + co) * 4 + 3]
+					quart(0, pixels, ro, co),
+					quart(1, pixels, ro, co),
+					quart(2, pixels, ro, co),
+					quart(3, pixels, ro, co)
 				];
-
-				if (sourcePixel[3] < 20) {
-					if (sourcePixel[3] > 100) {
-						sourcePixel[0] = 255;
-						sourcePixel[1] = 255;
-						sourcePixel[2] = 0;
-						sourcePixel[3] = 155
-					} else {
-
-						sourcePixel[3] = 0;
-					}
-				}
-				else sourcePixel[3] = 255;
-
-				//if (row % 2 === 0) {
-				//	sourcePixel[3] = 100;
-				//}
 
 				for(var y = 0; y < scale; y++) {
 					var destRow = row * scale + y;
@@ -469,8 +606,7 @@ function makeSheet(img, w, h) {
 };
 (function () {
 
-	var rooms,
-		roomMap;
+	var rooms;
 
 	window.Map = {
 
@@ -481,16 +617,18 @@ function makeSheet(img, w, h) {
 
 			this.sheet = sheet;
 			this.camera = camera;
+			this.walkable = BLOCKS.walkable;
 
 			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
-			this.pickups = this.addPickups();
-			this.pieces = this.addPieces();
 
-			this.walkable = BLOCKS.walkable;
 			this.cellH = this.cells.length;
 			this.cellW = this.cells[0].length;
 			this.h = this.cellH * sheet.h;
 			this.w = this.cellW * sheet.w;
+
+			this.pickups = this.addPickups();
+			this.pieces = this.addPieces();
+
 
 			this.camera.setBounds(this.w, this.h);
 
@@ -508,6 +646,8 @@ function makeSheet(img, w, h) {
 					roomMap[i].push(Math.random() * (rooms.length) | 0);
 				}
 			}
+
+			roomMap[0][0] = 1;
 
 			return roomMap;
 		},
@@ -540,15 +680,36 @@ function makeSheet(img, w, h) {
 
 		},
 
+		findFreeBlock: function () {
+			var x,
+				y,
+				cell = this.walkable + 1;
+
+			while (cell > this.walkable) {
+
+				x = Math.random() * this.cells[0].length | 0;
+				y = Math.random() * this.cells.length | 0;
+
+				cell = this.cells[y][x];
+
+			}
+
+			return [x, y];
+		},
+
 		addPickups: function () {
 
-			var pickup = [];
+			var pickup = [],
+				i,
+				pos;
 
-			for (var i = 0; i < 60; i++) {
+			for (i = 0; i < 60; i++) {
+
+				pos = this.findFreeBlock();
 
 				pickup.push([
-					Math.random() * this.cells[0].length | 0,
-					Math.random() * this.cells.length | 0
+					pos[0],
+					pos[1]
 				]);
 
 			}
@@ -559,13 +720,16 @@ function makeSheet(img, w, h) {
 
 		addPieces: function () {
 
-			var pieces = [];
+			var pieces = [],
+				pos;
 
 			for (var i = 0; i < 4; i++) {
 
+				pos = this.findFreeBlock();
+
 				pieces.push([
-					Math.random() * this.cells[0].length | 0,
-					Math.random() * this.cells.length | 0
+					pos[0],
+					pos[1]
 				]);
 
 			}
@@ -609,7 +773,6 @@ function makeSheet(img, w, h) {
 			var tw = game.tw,
 				th = game.th,
 				cellW = this.sheet.cellW,
-				cellH = this.sheet.cellH,
 				stx = this.camera.x / tw | 0,
 				sty = this.camera.y / th | 0,
 				endx = stx + (this.camera.w / tw | 0) + 1,
@@ -838,7 +1001,13 @@ var Ghoul = function () {
 	this.life = 3;
 	this.knockBack = 0;
 	this.xpValue = 5;
+	this.xpAttackValue = -20;
+
 	this.isAngry = false;
+	this.foreverAngry = false;
+
+	this.visible = false;
+	this.notVisibleFor = 0;
 };
 Ghoul.prototype = new Entity;
 Ghoul.prototype.init = function (x, y, dir, level) {
@@ -847,26 +1016,29 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 
 	this.level = level;
 
+	this.speed = Math.random() + 0.6;
+	this.angrySpeed = Math.random() * 0.5 + 1.2;
+
 	this.dir = dir || 1;
 
 	this.offs = {
-		headX: 2,
-		headY: -3,
+		headX: 1,
+		headY: -2,
 		bodyX: 0,
-		bodyY: 5
+		bodyY: 6
 	}
 
 	return this;
 },
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
-		this.knockBack = e.dir === this.dir ? 2 * e.dir : -6 * this.dir;
+		this.knockBack = e.dir === this.dir ? 3 * e.dir : -7 * this.dir;
 		if(this.life-- <= 0) {
 			this.level.xp(this);
 			this.remove = true;
 		}
 	}
-	if (e instanceof Trap) {
+	if (e instanceof Trap || e instanceof Player) {
 		this.remove = true;
 	}
 };
@@ -874,13 +1046,22 @@ Ghoul.prototype.tick = function (map) {
 	var yo = 0,
 		xo = 0,
 		player;
+
+	if (!this.visible) {
+		if (this.notVisibleFor ++ > 2000) {
+			return false;
+		}
+	} else {
+		this.notVisibleFor = 0;
+	}
+
 	if (!this.isAngry) {
-		yo = Math.sin(Date.now() / 100);
+		yo = Math.sin(Date.now() / 100	);
 		xo = this.speed * this.dir;
 	} else {
 		player = this.level.player;
 		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
-		if (dist < 400) {
+		if (this.foreverAngry || dist < 350) {
 			if (Math.abs(this.y - player.y) > 2) {
 				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
 			} else if (Math.abs(this.x - player.x) > 5) {
@@ -888,6 +1069,7 @@ Ghoul.prototype.tick = function (map) {
 				xo = this.angrySpeed * this.dir;
 			}
 		}
+		yo += Math.sin(Date.now() / 100) / 2;
 
 	}
 
@@ -896,12 +1078,20 @@ Ghoul.prototype.tick = function (map) {
 		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
 	}
 
+
 	if (!this.isAngry) {
-		this.move(xo, yo, map);
+		// Don't move if not visible - save coll detection on map
+		if (this.visible) {
+			this.move(xo, yo, map);
+		}
 	} else {
 		this.x += xo;
 		this.y += yo;
+		if (this.visible) {
+			this.foreverAngry = true;
+		}
 	}
+
 	return !(this.remove);
 };
 Ghoul.prototype.hitBlocks = function (x, y) {
@@ -909,25 +1099,29 @@ Ghoul.prototype.hitBlocks = function (x, y) {
 };
 Ghoul.prototype.render = function (c) {
 
-	c.strokeStyle = "hsl(70, 100%, 50%)";
+	c.strokeStyle = "#000";
+	c.lineWidth = 2;
 
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
     c.shadowOffsetY = 0;
     c.shadowBlur    = 10;
 
+	var o = Math.sin(Date.now() / 300) * 2;
 	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
-	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
-	//c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
+	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
+
 
 	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
-	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-	//c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
+	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
 
-	c.fillStyle = "hsl(120, 40%, 50%)";
+	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
+	c.strokeRect(this.x + 2, this.y +20, 8, 3);
+	c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
 
-	c.fillRect(this.x + 4, this.y + 11, 3, 5);
 
 };var Player = function() {
 	this.w = 12;
@@ -948,6 +1142,7 @@ Ghoul.prototype.render = function (c) {
 	this.pieces = [false, false, false, false];
 
 	this.trapLaunch = -1;
+	this.crouching = false;
 
 };
 Player.prototype = new Entity;
@@ -999,10 +1194,17 @@ Player.prototype.tick = function (input, map) {
 			}
 		}
 	}
+	if (input.wasDown("down")) {
+		this.crouching = false;
+	}
 	if (input.isDown("down")) {
+		if (!this.falling) {
+			this.crouching = true;
+		}
 		if (input.isDown("fire") && this.numTraps > 0) {
 			if (this.trapLaunch < 0) {
 				this.trapLaunch = 20;
+				audio.sfx.swiggle();
 			} else {
 				if (--this.trapLaunch === -1) {
 					this.trapLaunch = 1000; // TODO: just release fire button.
@@ -1029,7 +1231,7 @@ Player.prototype.tick = function (input, map) {
 		this.acc[0] += speed;
 		this.dir = 1;
 	}
-	if (input.pressed("fire")) {
+	if (input.pressed("fire") && !this.crouching) {
 		this.projectiles.push(
 			new Spear().init(this.x, this.y, this.dir)
 		);
@@ -1040,7 +1242,17 @@ Player.prototype.tick = function (input, map) {
 
 	this.wasFalling = this.falling;
 	this.move(this.xo, this.yo, map);
+
+	if (this.x < 5) this.x = 5;
+	if (this.y < -3) this.y = -3;
+	if (this.x > map.w - 5) this.x = map.w -5;
+
+
 	this.checkBlocks(input, map);
+
+	if (this.onLadder) {
+		this.crouching = false;
+	}
 
 };
 
@@ -1110,10 +1322,11 @@ Player.prototype.hitSpear = function (spear) {
 };
 
 Player.prototype.isMoving = function () {
-	return Math.abs(this.vel[0]) > 0.3 || Math.abs(this.vel[1]) > 0.3;
+	return Math.abs(this.vel[0]) > 0.3 || (!this.crouching && Math.abs(this.vel[1]) > 0.3)
 };
 
-Player.prototype.killed = function (spear) {
+Player.prototype.killed = function (e) {
+	e && this.level.xp({xpValue:e.xpAttackValue});
 	this.x = this.checkpoint[0];
 	this.y = this.checkpoint[1];
 };
@@ -1173,9 +1386,17 @@ Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;
 
-	c.fillStyle = "#900";
-	c.fillRect(this.checkpoint[0], this.checkpoint[1] + this.h - 4, this.w, 4);
 	// draw checkpoint
+	var grd = c.createLinearGradient(this.checkpoint[0] + game.tw / 2, this.checkpoint[1], this.checkpoint[0] + game.tw / 2, this.checkpoint[1] + game.th);
+	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
+	grd.addColorStop(1, "hsla(" + (Math.random() * 130 + 40 | 0) +", 100%, 50%, 1)");
+	c.fillStyle = grd;
+	c.fillRect(this.checkpoint[0], this.checkpoint[1], game.tw, game.th - 3);
+
+	c.fillStyle = "#dd0";
+	c.fillRect(this.checkpoint[0], this.checkpoint[1] + game.th - 3, game.tw, 3);
+
 
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
@@ -1194,9 +1415,10 @@ Player.prototype.render = function (c) {
 	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
 
 	c.fillStyle = "hsl(20, 30%, 40%)";
+
 	if (!this.onLadder) {
-		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + (this.crouching * 4), 6, 10);
+		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + (this.crouching * 4), 6, 10);
 	} else {
 		c.fillRect(this.x + 3, this.y + this.offs.headY, 6, 10);
 		c.strokeRect(this.x + 3, this.y + this.offs.headY, 6, 10);
@@ -1327,6 +1549,7 @@ Pickup.prototype.hit = function (e) {};
 Pickup.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.fillStyle = "#a00";
+	c.lineWidth = 2;
 	c.beginPath();
 	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
 	c.fill();
@@ -1355,7 +1578,7 @@ Piece.prototype.render = function (c) {
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
     c.shadowOffsetY = 0;
-    c.shadowBlur    = 10;
+    c.shadowBlur = 10;
 
 	c.strokeStyle = "#ff0";
 	c.fillStyle = "#aa0";
@@ -1363,6 +1586,7 @@ Piece.prototype.render = function (c) {
 	c.arc(this.x + this.w / 2, this.y + this.h / 2, this.w /3, 0, Math.PI * 2, false);
 	c.fill();
 	c.stroke();
+
 };
 
 var Camera = {
@@ -1370,6 +1594,7 @@ var Camera = {
 	y: 0,
 	xRange: 80,
 	yRange: 100,
+	zoom: 1,
 	init: function (entity, x, y, w, h) {
 
 		this.entity = entity;
@@ -1472,11 +1697,13 @@ var Camera = {
 			}, [])
 			// Remove out-of-view entites
 			.filter(function (r) {
-				return r.repeat || !(
+				var visible = r.repeat || !(
 					r.x + r.w < self.x ||
 					r.y + r.h < self.y ||
 					r.x > self.x + (self.w / self.zoom) ||
 					r.y > self.y + (self.h / self.zoom));
+				r.visible = visible;
+				return visible;
 			})
 			// Draw 'em
 			.forEach(function (r) {
@@ -1517,21 +1744,42 @@ Dialog.prototype = {
 window.Screen = window.Screen || {};
 Screen.title = {
 
+	count: 0,
+
 	init: function () {
+		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
 		return this;
 	},
 
 	tick: function (input) {
 
+		this.count++;
+
+		if (this.count > 50 && input.pressed("fire")) {
+			game.setScreen(Screen.level);
+		}
+
 	},
 
 	render: function (c) {
-		c.fillStyle = "#000";
-		c.fillRect(0, 0, c.w, c.h);
 
-		c.fillStyle = "#888";
-		c.font = "10pt monospace";
-		c.fillText("abcdefghijklmnopqrstuvwxyz", c.w * 0.5, c.h * 0.5);
+		c.clearRect(0, 0, c.w, c.h);
+		c.save();
+		c.scale(3, 3);
+
+		for (var i = 0; i < 12; i++) {
+			this.tiles.render(c, 5, 0, i * game.tw, 100);
+			for (var j = 0; j < 5; j++) {
+				this.tiles.render(c, 7, 0, i * game.tw, game.th * (j + 1) + 100);
+			}
+		}
+
+		game.res.font(c, "JS13K", 15 + Math.sin(Date.now() / 300) * 5, 10 + Math.cos(Date.now() / 200) * 2);
+		game.res.font(c, "BY", 10, 40);
+		game.res.font(c, "MR SPEAKER", 10, 70);
+
+
+		c.restore();
 	}
 
 };
@@ -1541,7 +1789,7 @@ Screen.level = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.player = new Player().init(100, 100, this);
+		this.player = new Player().init(game.tw * 7, game.th * 5, this);
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
@@ -1586,15 +1834,12 @@ Screen.level = {
 					}
 				}
 			}
-			if (this.ghouls.length < 1) {
-				console.log("create!");
 			this.ghouls.push(
 				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
 			// Random based on completeness that ghost is angry
 			if (Math.random() < 0.4 * ((this.player.complete() + 1) / 4)) {
 				this.ghouls[this.ghouls.length - 1].isAngry = true;
-			}
 			}
 		}
 
@@ -1669,6 +1914,7 @@ var Input = {
 		39: { wasDown: false, isDown: false },
 		40: { wasDown: false, isDown: false },
 		32: { wasDown: false, isDown: false },
+		13: { wasDown: false, isDown: false }
 	},
 
 	actions: {
@@ -1676,7 +1922,8 @@ var Input = {
 		"right": 39,
 		"down": 40,
 		"left": 37,
-		"fire": 32
+		"fire": 32,
+		"escape": 13
 	},
 
 	init: function () {
@@ -1751,6 +1998,7 @@ var game = {
 		audio.init();
 		this.reset();
 		this.run();
+
 	},
 
 	setScreen: function (screen) {
@@ -1759,13 +2007,15 @@ var game = {
 
 	addMainCanvas: function () {
 		var ctx = utils.createCanvas(720, 405, "board");
+		ctx.canvas.backgroundColor = COLOR.back_main;
+
 		document.body.appendChild(ctx.canvas);
 		return ctx;
 	},
 
 	reset: function () {
 		this.input.reset();
-		this.setScreen(Screen.level);
+		this.setScreen(Screen.title);
 	},
 
 	run: function (d) {

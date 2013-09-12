@@ -28,10 +28,10 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 	this.dir = dir || 1;
 
 	this.offs = {
-		headX: 2,
-		headY: -3,
+		headX: 1,
+		headY: -2,
 		bodyX: 0,
-		bodyY: 5
+		bodyY: 6
 	}
 
 	return this;
@@ -113,19 +113,20 @@ Ghoul.prototype.render = function (c) {
     c.shadowOffsetY = 0;
     c.shadowBlur    = 10;
 
+	var o = Math.sin(Date.now() / 300) * 2;
 	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
-	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
-	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY, 12, 15);
+	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
+	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
 
 
 	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
-	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
-	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY, 6, 10);
+	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
+	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
 
 	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
 	c.strokeRect(this.x + 2, this.y +20, 8, 3);
-	c.fillRect(this.x + 4, this.y + 11, 3, 5);
+	c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
 
 
 };
