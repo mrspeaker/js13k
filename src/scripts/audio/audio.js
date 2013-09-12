@@ -72,17 +72,19 @@
 			shoot: function () {
 				var now = c.currentTime;
 				var s = noise();
+				var f = c.createBiquadFilter();
+				var g = c.createGain();
+				g.gain.value = 0.12;
+				var start = Math.random() * 2000 + 500 | 0;
 
-				//var f = c.createBiquadFilter();
+				f.Q.value = 10;
+				f.frequency.value = start;
+				f.frequency.setValueAtTime(start, now);
+				f.frequency.linearRampToValueAtTime(6000, now + 0.04);
 
-				s.connect(audio.master);
-				//f.Q.value = 20;
-				//var start = Math.random() * 2000 + 500 | 0;
-				//f.frequency.value = start;
-				//f.frequency.setValueAtTime(start, now);
-				//f.frequency.linearRampToValueAtTime(100, now + 0.02);
-
-				//s.connect(f);
+				s.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
 
 				s.start(now, 0.04);
 				s.stop(now + 0.04);
