@@ -1,11 +1,20 @@
-js13k entry by Mr Speaker
+#js13k entry by Mr Speaker
 
 # TODO
 
-- re-start rooms
-- tutorial section
-- building anim
-- player throw anim
+- spawn ghauls near player
+- better rooms
+- tutorial rooms
+- balancing - rough
 - sfx
 - tune
-- balancing
+- building anim
+- balancing - fine
+- player throw anim
+
+- rename ghouls
+- rewrite texts
+- add images to win screen
+
+- audio in firefox
+- support no-audio version

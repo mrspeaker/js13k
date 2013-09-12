@@ -20,10 +20,12 @@ var Player = function() {
 	this.crouching = false;
 
 	this.deaded = false;
+	this.jumpHeight = -game.th - 1;
 
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
+
 	this.x = x;
 	this.y = y;
 	this.level = level;
@@ -70,9 +72,7 @@ Player.prototype.tick = function (input, map) {
 		} else {
 			if (!this.falling && !this.wasFalling) {
 				audio.sfx.jump();
-				this.acc[1] = -map.sheet.h - 1;
-				this.vel[1] = 0;
-				this.falling = true;
+				this.jump();
 			}
 		}
 	}
@@ -137,6 +137,11 @@ Player.prototype.tick = function (input, map) {
 	}
 
 };
+Player.prototype.jump = function () {
+	this.acc[1] = this.jumpHeight;
+	this.vel[1] = 0;
+	this.falling = true;
+};
 Player.prototype.tickDead = function () {
 	var dx = this.x - this.checkpoint[0],
 		dy = this.y - this.checkpoint[1],
@@ -145,6 +150,7 @@ Player.prototype.tickDead = function () {
 	if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
 		this.x = this.checkpoint[0];
 		this.y = this.checkpoint[1];
+		this.jump();
 		this.deaded = false;
 	}
 
