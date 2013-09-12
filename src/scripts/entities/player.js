@@ -202,6 +202,7 @@ Player.prototype.isMoving = function () {
 
 Player.prototype.killed = function (e) {
 	e && this.level.xp({xpValue:e.xpAttackValue});
+	this.level.explode(this.x + this.w / 2, this.y + this.h);
 	this.x = this.checkpoint[0];
 	this.y = this.checkpoint[1];
 };

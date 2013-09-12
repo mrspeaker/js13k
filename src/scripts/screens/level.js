@@ -18,10 +18,11 @@ Screen.level = {
 
 		this.particles = [];
 
-		this.p = new Particle().init({});
-		this.particles.push(
-			this.p
-		);
+		for (var i = 0; i < 5; i++) {
+			this.particles.push(
+				new Particle().init({})
+			)
+		}
 
 		return this;
 	},
@@ -41,8 +42,6 @@ Screen.level = {
 		this.particles.forEach(function (p) {
 			return p.tick();
 		});
-
-		if (Math.random() < 0.01) this.p.play(20, 20);
 
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
@@ -82,6 +81,24 @@ Screen.level = {
 	xp: function (e) {
 
 		this.player.xp += e.xpValue;
+
+	},
+
+	explode: function (x, y) {
+
+		var played = false;
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			if (!p.running) {
+				p.play(x, y);
+				played = true;
+			}
+			break;
+		}
+
+		if (!played) {
+			this.particles[0].play(x, y);
+		}
 
 	},
 

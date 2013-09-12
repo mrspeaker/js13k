@@ -336,7 +336,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 		},
 
-		render: function (gfx) {
+		render: function (c) {
 
 			var self = this;
 
@@ -345,12 +345,12 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			}
 
 			this.particles.forEach(function (p) {
-				p.render(gfx, self.x, self.y);
+				p.render(c, self.x, self.y);
 			});
 
 		}
 
-	});
+	};
 
 	function Part (opts, parent) {
 		this.parent = parent;
@@ -378,9 +378,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			this.ySpeed += 0.2;
 		},
 
-		render: function (gfx, x, y) {
-
-			var c = gfx.ctx;
+		render: function (c, x, y) {
 
 			c.fillStyle = "rgba(" + this.col + ", " + (0.3 + this.parent.life / this.parent.maxLife) + ")";
 			c.fillRect(this.x + x, this.y + y, this.w, this.h);
@@ -1801,6 +1799,13 @@ Screen.level = {
 		});
 		this.ghouls = [];
 
+		this.particles = [];
+
+		this.p = new Particle().init({});
+		this.particles.push(
+			this.p
+		);
+
 		return this;
 	},
 
@@ -1816,6 +1821,11 @@ Screen.level = {
 		this.pieces = this.pieces.filter(function (p) {
 			return p.tick();
 		});
+		this.particles.forEach(function (p) {
+			return p.tick();
+		});
+
+		if (Math.random() < 0.01) this.p.play(20, 20);
 
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
@@ -1896,7 +1906,8 @@ Screen.level = {
 			this.pickups,
 			this.pieces,
 			this.ghouls,
-			this.player
+			this.player,
+			this.particles
 		]);
 
 		game.res.font(c, "GRAIL: " + this.player.complete() + "/4", 20, 20);

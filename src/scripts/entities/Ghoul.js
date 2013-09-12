@@ -42,10 +42,12 @@ Ghoul.prototype.hit = function (e) {
 		if(this.life-- <= 0) {
 			this.level.xp(this);
 			this.remove = true;
+			this.level.explode(this.x + this.w / 2, this.y + this.h);
 		}
 	}
 	if (e instanceof Trap || e instanceof Player) {
 		this.remove = true;
+		this.level.explode(this.x + this.w / 2, this.y + this.h);
 	}
 };
 Ghoul.prototype.tick = function (map) {
