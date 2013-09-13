@@ -34,13 +34,15 @@
 
 			var roomMap = [],
 				room,
-				normalRooms = 8;
+				normalRooms = 8,
+				numRows = 15,
+				numCols = 20;
 
-			for (var i = 0; i < 15; i++) {
+			for (var i = 0; i < numRows; i++) {
 				roomMap.push([]);
-				for (var j = 0; j < 20; j++) {
+				for (var j = 0; j < numCols; j++) {
 					room = Math.random() * normalRooms | 0;
-					if (i === 17 && room === 3) {
+					if (i === numRows - 1 && room === 3) {
 						// Don't put the water room on the bottom of the map
 						j--;
 						continue;
@@ -49,9 +51,11 @@
 				}
 			}
 
+			// Draw top level "flat" area
 			for (i = 0; i < 8; i++) {
 				roomMap[0][i] = normalRooms + 1;
 			}
+			// With some ways down
 			roomMap[0][2] = normalRooms + 2;
 			roomMap[0][4] = 7;
 
@@ -316,7 +320,7 @@
 		[5, 7, 7, 5, 5, 0, 5, 5, 7, 7, 7]
 	],
 
-
+	// Special rooms (not included in normal map gen)
 	[
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
