@@ -200,7 +200,7 @@ Player.prototype.hit = function (e) {
 		p[e.id] = true;
 		this.checkpoint = [this.x, this.y];
 		this.level.xp(e);
-		if (this.complete() === 1) {
+		if (this.complete() === 4) {
 			this.level.winsTheGame();
 		} else {
 			if (this.complete() === 1) {

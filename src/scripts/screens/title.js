@@ -33,9 +33,9 @@ Screen.title = {
 
 	render: function (c) {
 
-		c.fillStyle = "hsla(211, 20%, 37%, 0.1)";
+		c.fillStyle = "hsla(211, 20%, 37%, 0.15)";
 		c.fillRect(0, 0, c.w, c.h);
-		c.fillStyle = "hsla(65, 40%, 70%, 0.06)";
+		c.fillStyle = "hsla(65, 40%, 70%, 0.2)";
 
 		this.stars.forEach(function (s) {
 			c.beginPath();
