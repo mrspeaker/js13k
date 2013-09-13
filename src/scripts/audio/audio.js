@@ -49,7 +49,7 @@
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.12;
+				g.gain.value = 0.35;
 				f.frequency.value = 2000;
 				f.Q.value = 10;
 
@@ -106,6 +106,33 @@
 				audio.stop(o, now + 0.12);
 			},
 
+			collect: function () {
+				if(!c) return;
+				var now = c.currentTime;
+				var o = c.createOscillator(),
+					lfo = c.createOscillator(),
+					lfogain = audio.createGain();
+				var f = c.createBiquadFilter();
+				var g = audio.createGain();
+
+				o.type = "sine"
+				o.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
+				lfo.type = "sine";
+				lfo.frequency.value = 10;
+				lfogain.gain.setValueAtTime(10, now);
+				lfogain.gain.linearRampToValueAtTime(200, now + 1);
+				lfo.connect(lfogain);
+				lfogain.connect(o.frequency);
+
+				g.gain.value = 1;
+				audio.start(lfo, now);
+				audio.start(o, now);
+				audio.stop(o, now + 1);
+			},
+
 			swiggle: function () {
 				if(!c) return;
 				var now = c.currentTime;
@@ -116,7 +143,7 @@
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.05;
+				g.gain.value = 0.15;
 				f.frequency.value = 3000;
 				f.Q.value = 10;
 

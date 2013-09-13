@@ -6,6 +6,9 @@ Screen.win = {
 	init: function (xp) {
 		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
 		this.xp = xp || 0;
+
+		audio.sfx.collect();
+
 		return this;
 	},
 

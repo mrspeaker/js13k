@@ -203,6 +203,7 @@ Player.prototype.hit = function (e) {
 		if (this.complete() === 4) {
 			this.level.winsTheGame();
 		} else {
+			audio.sfx.collect();
 			if (this.complete() === 1) {
 				this.level.firstPiece();
 			}

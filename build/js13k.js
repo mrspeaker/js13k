@@ -178,7 +178,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.12;
+				g.gain.value = 0.35;
 				f.frequency.value = 2000;
 				f.Q.value = 10;
 
@@ -210,8 +210,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				f.connect(g);
 				g.connect(audio.master);
 
-				//audio.start(s, now);
-				//audio.stop(s, now + 0.04);
 			},
 
 			pickup: function () {
@@ -237,6 +235,33 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				audio.stop(o, now + 0.12);
 			},
 
+			collect: function () {
+				if(!c) return;
+				var now = c.currentTime;
+				var o = c.createOscillator(),
+					lfo = c.createOscillator(),
+					lfogain = audio.createGain();
+				var f = c.createBiquadFilter();
+				var g = audio.createGain();
+
+				o.type = "sine"
+				o.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
+				lfo.type = "sine";
+				lfo.frequency.value = 10;
+				lfogain.gain.setValueAtTime(10, now);
+				lfogain.gain.linearRampToValueAtTime(200, now + 1);
+				lfo.connect(lfogain);
+				lfogain.connect(o.frequency);
+
+				g.gain.value = 1;
+				audio.start(lfo, now);
+				audio.start(o, now);
+				audio.stop(o, now + 1);
+			},
+
 			swiggle: function () {
 				if(!c) return;
 				var now = c.currentTime;
@@ -247,7 +272,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.05;
+				g.gain.value = 0.15;
 				f.frequency.value = 3000;
 				f.Q.value = 10;
 
@@ -258,6 +283,27 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 				audio.start(o, 0);
 				audio.stop(o, now + 0.32);
+			},
+
+			die: function () {
+				if(!c) return;
+				var now = c.currentTime,
+					s = audio.noise,
+					f = c.createBiquadFilter(),
+					g = audio.createGain();
+
+				envelope(g, now, 0.6, 0.5, 0.01, 0.01, 0.4, 0.08);
+
+				var start = Math.random() * 20000 + 500 | 0;
+				f.Q.value = 10;
+				f.frequency.value = start;
+				f.frequency.setValueAtTime(start, now);
+				f.frequency.linearRampToValueAtTime(200, now + 0.5);
+
+				s.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
 			}
 		},
 
@@ -1436,6 +1482,7 @@ Player.prototype.hit = function (e) {
 		if (this.complete() === 4) {
 			this.level.winsTheGame();
 		} else {
+			audio.sfx.collect();
 			if (this.complete() === 1) {
 				this.level.firstPiece();
 			}
@@ -1466,6 +1513,9 @@ Player.prototype.isMoving = function () {
 };
 
 Player.prototype.killed = function (e) {
+	if (this.deaded) {
+		return;
+	}
 	e && this.level.xp({xpValue:e.xpAttackValue});
 	this.level.explode(this.x + this.w / 2, this.y + this.h);
 	this.deaded = true;
@@ -1978,6 +2028,9 @@ Screen.win = {
 	init: function (xp) {
 		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
 		this.xp = xp || 0;
+
+		audio.sfx.collect();
+
 		return this;
 	},
 
@@ -2120,6 +2173,8 @@ Screen.level = {
 		if (!played) {
 			this.particles[0].play(x, y);
 		}
+
+		audio.sfx.die();
 
 	},
 
