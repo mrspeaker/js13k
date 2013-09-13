@@ -157,9 +157,18 @@ var COLOR = {
 
 	window.audio = {
 
+		jumpedat: Date.now(),
+
 		sfx: {
 			"jump": function() {
 				if(!c) return;
+
+				console.log(Date.now() - audio.jumpedat)
+				if (Date.now() - audio.jumpedat < 100) {
+					return;
+				}
+				audio.jumpedat = Date.now();
+
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
@@ -708,16 +717,28 @@ function makeSheet(img, w, h) {
 
 		generateRoomMap: function () {
 
-			var roomMap = [];
+			var roomMap = [],
+				room,
+				normalRooms = 8;
 
-			for (var i = 0; i < 12; i++) {
+			for (var i = 0; i < 15; i++) {
 				roomMap.push([]);
-				for (var j = 0; j < 15; j++) {
-					roomMap[i].push(Math.random() * (rooms.length) | 0);
+				for (var j = 0; j < 20; j++) {
+					room = Math.random() * normalRooms | 0;
+					if (i === 17 && room === 3) {
+						// Don't put the water room on the bottom of the map
+						j--;
+						continue;
+					}
+					roomMap[i].push(room);
 				}
 			}
 
-			roomMap[0][0] = 1;
+			for (i = 0; i < 8; i++) {
+				roomMap[0][i] = normalRooms + 1;
+			}
+			roomMap[0][2] = normalRooms + 2;
+			roomMap[0][4] = 7;
 
 			return roomMap;
 		},
@@ -775,7 +796,11 @@ function makeSheet(img, w, h) {
 
 			for (i = 0; i < 60; i++) {
 
+				// Don't spawn at the top
 				pos = this.findFreeBlock();
+				while (pos[1] < 7) {
+					pos = this.findFreeBlock();
+				}
 
 				pickup.push([
 					pos[0],
@@ -783,6 +808,12 @@ function makeSheet(img, w, h) {
 				]);
 
 			}
+
+			// Add training piece
+			pickup.push([
+				49,
+				6
+			]);
 
 			return pickup;
 
@@ -795,7 +826,11 @@ function makeSheet(img, w, h) {
 
 			for (var i = 0; i < 4; i++) {
 
+				// Don't spawn at the top
 				pos = this.findFreeBlock();
+				while (pos[1] < 7) {
+					pos = this.findFreeBlock();
+				}
 
 				pieces.push([
 					pos[0],
@@ -893,7 +928,7 @@ function makeSheet(img, w, h) {
 		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
 		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
 		[ 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-		[ 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[ 5, 1, 5, 5, 5, 5, 5, 5, 1, 5, 5]
 	], [
@@ -902,15 +937,15 @@ function makeSheet(img, w, h) {
 		[ 5, 8,12, 0, 0, 0, 0, 0, 6, 1, 6],
 		[ 7, 8, 8,12, 0, 0, 0, 0, 0, 1, 0],
 		[ 7, 8, 8, 8,12, 0, 0, 0, 0, 1, 0],
-		[ 7, 0, 8, 8, 8,12, 0, 0, 0, 1, 0],
+		[ 7, 0, 8, 8, 7, 0, 0, 0, 0, 1, 0],
 		[ 0, 0, 5, 5, 5, 5, 5, 5, 5, 1, 5],
 	], [
+		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[ 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 1],
-		[ 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0],
+		[ 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 1],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0],
+		[ 0, 0, 6, 0, 0, 0, 0, 0, 6, 0, 0],
+		[ 5, 5, 5, 5, 5, 5, 5, 5, 5,12, 0],
 		[ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1]
 	], [
 		[ 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 7],
@@ -925,27 +960,65 @@ function makeSheet(img, w, h) {
 		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
 		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[7, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
+		[0, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
 		[1, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
 		[1, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
 	],
 	[
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
-		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
-		[0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0,11, 5],
+		[0, 0, 0, 0, 0, 0, 0, 0,11, 7, 0],
+		[0, 0, 0, 0, 0, 0,11, 5, 7, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
-		[0, 0, 5, 5,12, 0, 0, 0, 0, 0, 7],
-		[7, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+		[0, 0,11, 5,12, 0, 0, 0, 0, 0, 7],
+		[7, 7, 7, 7, 7, 0, 5, 5, 5, 1, 7]
 	],
 	[
 		[0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0],
 		[5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
 		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
-		[0, 0, 5, 5, 0, 0, 0, 5, 7, 0, 0],
-		[0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 5],
+		[0, 0,11, 5, 0, 0, 0, 5, 7, 0, 0],
+		[0, 0, 0, 0, 5,12, 0, 0, 0, 0, 5],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	],
+	[
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0,11,11, 1,11,12, 0, 0, 0],
+		[ 0, 0, 0, 7, 7, 1, 7, 7,12, 0, 0],
+		[ 0, 0,11, 7, 7, 1, 7, 7, 7, 0, 0],
+		[ 5, 5, 7, 7, 7, 1, 7, 7, 7, 5, 5]
+	],
+	[
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0,11, 12, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 7, 7, 0, 0, 0, 0, 0,11,12, 0],
+		[0, 7, 7, 0, 0, 0, 0, 0, 7, 7,12],
+		[0, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7],
+		[5, 7, 7, 5, 5, 0, 5, 5, 7, 7, 7]
+	],
+
+
+	[
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+	],
+	[
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0,11,12, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 7, 7,12],
+		[0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7],
+		[5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7]
 	]
 	];
 
@@ -1070,8 +1143,8 @@ var Ghoul = function () {
 	this.angrySpeed = 1.5;
 	this.life = 3;
 	this.knockBack = 0;
-	this.xpValue = 5;
-	this.xpAttackValue = -20;
+	this.xpValue = 15;
+	this.xpAttackValue = -8;
 
 	this.isAngry = false;
 	this.foreverAngry = false;
@@ -1198,7 +1271,7 @@ Ghoul.prototype.render = function (c) {
 };var Pickup = function (){
 	this.w = 20;
 	this.h = 24;
-	this.xpValue = 3;
+	this.xpValue = 11;
 };
 Pickup.prototype = new Entity;
 Pickup.prototype.init = function (x, y) {
@@ -1225,7 +1298,7 @@ Pickup.prototype.render = function (c) {
 var Piece = function (){
 	this.w = 20;
 	this.h = 24;
-	this.xpValue = 11;
+	this.xpValue = 32;
 };
 Piece.prototype = new Entity;
 Piece.prototype.init = function (x, y, id) {
@@ -1280,6 +1353,9 @@ var Player = function() {
 
 	this.firing = 0;
 
+	this.everLaidTrap = false;
+	this.count = 0;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
@@ -1309,6 +1385,8 @@ Player.prototype.complete = function () {
 	return p[0] + p[1] + p[2] + p[3];
 };
 Player.prototype.tick = function (input, map) {
+
+	this.count++;
 
 	if (this.deaded) {
 		this.tickDead(input, map);
@@ -1352,6 +1430,7 @@ Player.prototype.tick = function (input, map) {
 					this.traps.push(
 						new Trap().init(this.x, this.y - 2 - 24)
 					);
+					this.everLaidTrap = true;
 					this.traps.forEach(function (t) {
 						t.setClosestPiece(this.level.pieces);
 					}, this);
@@ -1440,7 +1519,7 @@ Player.prototype.hit = function (e) {
 		// Befor you needed multipe pickups to make a trap. remove this.
 		audio.sfx.pickup();
 		this.numTraps++;
-		if(this.numPickups++ === 0) {
+		if(this.numPickups++ === 0 || (this.everLaidTrap === false && this.count > 6000)) {
 			this.level.firstPickup();
 		};
 		return;
@@ -1919,7 +1998,7 @@ Dialog.prototype = {
 	tick: function () {
 		this.count ++;
 
-		if (this.count > 50 && Input.isDown("fire")) {
+		if (this.count > 70 && Input.isDown("fire")) {
 			this.donefunc && this.donefunc.call(this);
 			return false;
 		}
@@ -2040,10 +2119,10 @@ Screen.win = {
 
 		c.restore();
 
-		game.res.font(c, "WELL DONE! YOU HAVE SAVED THE WOODS", 50, 140);
-		game.res.font(c, "AND TRAVELLED WELL. YOU RECLAIMED THE ENERGY ORGANS", 50, 170);
-		game.res.font(c, "AND EARNED " + this.xp + " YEARS OF REWARD.", 50, 200);
-		game.res.font(c, "THAT'S QUITE THE REWARD.", 50, 250);
+		game.res.font(c, "YOU HAVE SAVED THE DAY AND DONE WELL.", 50, 140);
+		game.res.font(c, "RECLAIMING THE GRAIL'S ENERGY GAVE YOU", 50, 170);
+		game.res.font(c, this.xp + " YEARS OF REWARD.", 50, 200);
+		game.res.font(c, "PLUS IT WAS QUITE FUN.", 50, 260);
 	}
 
 };
@@ -2053,7 +2132,7 @@ Screen.level = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.player = new Player().init(game.tw * 7, game.th * 5, this);
+		this.player = new Player().init(game.tw * 2, game.th * 5, this);
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
@@ -2092,20 +2171,26 @@ Screen.level = {
 			return p.tick();
 		});
 
+		// Generate a ghoul
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
 				x,
 				y;
 			while (!empty) {
 				x = Math.random() * (this.map.cellW - 4) | 0;
-				y = (Math.random() * (this.map.cellH - 4) | 0) + 2;
-				empty = true;
-				for (var i = 0; i < 4; i++) {
-					if (this.map.cells[y][x + i] > this.map.walkable ||
-						this.map.cells[y - 1][x + i] > this.map.walkable ||
-						this.map.cells[y + 1][x + i] > this.map.walkable ) {
-						empty = false;
-						break;
+				y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
+
+				var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);
+
+				if (dist < (5 - this.player.complete()) * 600) {
+					empty = true;
+					for (var i = 0; i < 4; i++) {
+						if (this.map.cells[y][x + i] > this.map.walkable ||
+							this.map.cells[y - 1][x + i] > this.map.walkable ||
+							this.map.cells[y + 1][x + i] > this.map.walkable ) {
+							empty = false;
+							break;
+						}
 					}
 				}
 			}
@@ -2158,15 +2243,17 @@ Screen.level = {
 
 	firstPickup: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A GHOUL TRAP...", 40, 60);
-			game.res.font(c, "TO ACTIVATE IT, HOLD DOWN AND FIRE.", 40, 100);
-			game.res.font(c, "CATCH A GHOUL TO FIND YOUR WAY.", 40, 150);
+			game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
+			game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
+			game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
+			game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
+			game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
 		});
 	},
 
 	firstPiece: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE HOLY GRAIL.", 40, 60);
+			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
 			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
 			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
 
