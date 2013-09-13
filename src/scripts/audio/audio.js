@@ -140,27 +140,37 @@
 		},
 
 		init: function () {
-			this.ctx = c = new (window.AudioContext || window.webkitAudioContext)();
+			// Some "polyfilling" of webaudio api
+			if (window.AudioContext) {
+				c = new AudioContext();
+			} else if (window.webkitAudioContext) {
+				c = new webkitAudioContext();
+			}
+
 			this.createGain = function () {
 				var node = null;
 				if (c.createGain) { node = c.createGain(); }
 				else if (c.createGainNode) { node = c.createGainNode(); }
+				else { this.ctx = c = null; }
 				return node
 			}
 			this.start = function (node, time) {
-				if (node.start) { node.start(time);
-				} else if (node.noteOn) { node.noteOn(time); }
+				if (node.start) { node.start(time); }
+				else if (node.noteOn) { node.noteOn(time); }
+				else { this.ctx = c = null; }
 			}
 			this.stop = function (node, time) {
-				if (node.stop) { node.stop(time);
-				} else if (node.noteOff) { node.noteOff(time); }
+				if (node.stop) { node.stop(time); }
+				else if (node.noteOff) { node.noteOff(time); }
+				else { this.ctx = c = null; }
 			}
 
-			if (c && !this.createGain()) {
+			if (c && (!this.createGain() || !c.createOscillator)) {
 				c = null;
 			}
+
 			if (!c) {
-				document.querySelector("#na").display = "inline";
+				document.querySelector("#na").style.display = "block";
 				return;
 			}
 
