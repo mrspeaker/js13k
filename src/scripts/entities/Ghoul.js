@@ -6,8 +6,8 @@ var Ghoul = function () {
 	this.angrySpeed = 1.5;
 	this.life = 3;
 	this.knockBack = 0;
-	this.xpValue = 5;
-	this.xpAttackValue = -20;
+	this.xpValue = 15;
+	this.xpAttackValue = -8;
 
 	this.isAngry = false;
 	this.foreverAngry = false;

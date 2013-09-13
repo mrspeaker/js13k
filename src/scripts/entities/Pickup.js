@@ -1,7 +1,7 @@
 var Pickup = function (){
 	this.w = 20;
 	this.h = 24;
-	this.xpValue = 3;
+	this.xpValue = 11;
 };
 Pickup.prototype = new Entity;
 Pickup.prototype.init = function (x, y) {

@@ -1,22 +1,6 @@
 /*
 	js13k game by Mr Speaker
 */
-var COLOR = {
-	"back_main":"#4b5d70",
-	"font_main":"#ffffff",
-	"tile":{
-		"dirt":"0x6b4d35",
-		"grass":"0x6aaa40",
-		"stone":"0x8f8c8d",
-		"water_splash":"0xffffff",
-		"water":"0x2781e8",
-		"lava_lines":"0xe12900",
-		"lava":"0xfe9b00",
-		"vine_leaves":"0x23b908",
-		"vine_ladder":"0xdea207"
-	}
-};
-
 var utils = {
 	snap: function(value, snapSize) {
 
@@ -127,19 +111,25 @@ var utils = {
 // Polyfills
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
 
+var COLOR = {
+	"back_main":"#4b5d70",
+	"font_main":"#ffffff",
+	"tile":{
+		"dirt":"0x6b4d35",
+		"grass":"0x6aaa40",
+		"stone":"0x8f8c8d",
+		"water_splash":"0xffffff",
+		"water":"0x2781e8",
+		"lava_lines":"0xe12900",
+		"lava":"0xfe9b00",
+		"vine_leaves":"0x23b908",
+		"vine_ladder":"0xdea207"
+	}
+};
+
 (function () {
 
 	var c;
-
-	function Modulator (type, freq, gain) {
-	  // this.osc = audioCtx.createOscillator();
-	  // this.gain = audioCtx.createGainNode();
-	  // this.osc.type = type;
-	  // this.osc.frequency.value = freq;
-	  // this.gain.gain.value = gain;
-	  // this.osc.connect(this.gain);
-	  // this.osc.start(0);
-	}
 
 	function envelope(gain, time, volume, duration, a, d, s, r) {
         gain.gain.cancelScheduledValues(0);
@@ -152,14 +142,14 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 	function noise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
-			data = buf.getChannelData(0);
+			data = buf.getChannelData(0),
+			node;
 
-		// Noise generator
 		for (i = 0; i < data.length; i++) {
 			data[i] = (Math.random() * 2 - 1) / 2;
 		}
 
-		var node = c.createBufferSource();
+		node = c.createBufferSource();
 		node.buffer = buf;
 		node.loop = true;
 		return node;
@@ -180,14 +170,14 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 				g.gain.value = 0.35;
 				f.frequency.value = 2000;
-				f.Q.value = 10;
+				f.Q.value = 3;
 
 				o.type = "sine"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(300, now);
-				o.frequency.linearRampToValueAtTime(600, now + 0.1);
+				o.frequency.linearRampToValueAtTime(400, now + 0.09);
 
-				audio.start(o, 0);
+				audio.start(o, now);
 				audio.stop(o, now + 0.1);
 			},
 
@@ -198,7 +188,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				var f = c.createBiquadFilter();
 				var g = audio.createGain();
 
-				envelope(g, now, 0.5, 0.04, 0.01, 0.01, 0.1, 0.1);
+				envelope(g, now, 0.7, 0.04, 0.01, 0.01, 0.1, 0.1);
 
 				var start = Math.random() * 2000 + 500 | 0;
 				f.Q.value = 10;
@@ -214,15 +204,15 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 			pickup: function () {
 				if(!c) return;
-				var now = c.currentTime;
-				var o = c.createOscillator();
-				var f = c.createBiquadFilter();
-				var g = audio.createGain();
+				var now = c.currentTime,
+					o = c.createOscillator(),
+					f = c.createBiquadFilter(),
+					g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.15;
+				g.gain.value = 0.12;
 				f.frequency.value = 3000;
 				f.Q.value = 10;
 
@@ -272,7 +262,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				f.connect(g);
 				g.connect(audio.master);
 
-				g.gain.value = 0.15;
+				g.gain.value = 0.10;
 				f.frequency.value = 3000;
 				f.Q.value = 10;
 
@@ -345,27 +335,14 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			this.noise = noise();
 			this.start(this.noise, 0);
 
-
 			this.master = audio.createGain();
-			this.master.gain.value = 0.5;
+			this.master.gain.value = 1;
 			this.master.connect(c.destination);
 
-			this.createTune();
 		},
 
 		stop: function () {
 			this.osc.stop(c.currentTime);
-		},
-
-		createTune: function () {
-			return;
-			for (var bar = 0; bar < 2; bar++) {
-			  var time = startTime + bar * 8 * eighthNoteTime;
-
-			  for (var i = 0; i < 8; ++i) {
-			    playSound(hihat, time + i * eighthNoteTime);
-			  }
-			}
 		}
 
 };
@@ -2063,9 +2040,10 @@ Screen.win = {
 
 		c.restore();
 
-		game.res.font(c, "YOU HAVE SAVED THE WOODS", 50, 140);
-		game.res.font(c, "AND EARNED " + this.xp + " YEARS OF REWARD.", 50, 170);
-		game.res.font(c, "SPEND IT WISELY.", 50, 235);
+		game.res.font(c, "WELL DONE! YOU HAVE SAVED THE WOODS", 50, 140);
+		game.res.font(c, "AND TRAVELLED WELL. YOU RECLAIMED THE ENERGY ORGANS", 50, 170);
+		game.res.font(c, "AND EARNED " + this.xp + " YEARS OF REWARD.", 50, 200);
+		game.res.font(c, "THAT'S QUITE THE REWARD.", 50, 250);
 	}
 
 };

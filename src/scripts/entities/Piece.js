@@ -1,7 +1,7 @@
 var Piece = function (){
 	this.w = 20;
 	this.h = 24;
-	this.xpValue = 11;
+	this.xpValue = 32;
 };
 Piece.prototype = new Entity;
 Piece.prototype.init = function (x, y, id) {

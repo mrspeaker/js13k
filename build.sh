@@ -14,8 +14,8 @@ echo "${header}" | \
 
 cat - \
 \
-src/scripts/color.js \
 src/scripts/utils.js \
+src/scripts/color.js \
 src/scripts/audio/audio.js \
 src/scripts/Particles.js \
 src/scripts/map/gen.js \

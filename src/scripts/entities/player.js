@@ -24,6 +24,9 @@ var Player = function() {
 
 	this.firing = 0;
 
+	this.everLaidTrap = false;
+	this.count = 0;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
@@ -53,6 +56,8 @@ Player.prototype.complete = function () {
 	return p[0] + p[1] + p[2] + p[3];
 };
 Player.prototype.tick = function (input, map) {
+
+	this.count++;
 
 	if (this.deaded) {
 		this.tickDead(input, map);
@@ -96,6 +101,7 @@ Player.prototype.tick = function (input, map) {
 					this.traps.push(
 						new Trap().init(this.x, this.y - 2 - 24)
 					);
+					this.everLaidTrap = true;
 					this.traps.forEach(function (t) {
 						t.setClosestPiece(this.level.pieces);
 					}, this);
@@ -184,7 +190,7 @@ Player.prototype.hit = function (e) {
 		// Befor you needed multipe pickups to make a trap. remove this.
 		audio.sfx.pickup();
 		this.numTraps++;
-		if(this.numPickups++ === 0) {
+		if(this.numPickups++ === 0 || (this.everLaidTrap === false && this.count > 6000)) {
 			this.level.firstPickup();
 		};
 		return;

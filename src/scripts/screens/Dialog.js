@@ -12,7 +12,7 @@ Dialog.prototype = {
 	tick: function () {
 		this.count ++;
 
-		if (this.count > 50 && Input.isDown("fire")) {
+		if (this.count > 70 && Input.isDown("fire")) {
 			this.donefunc && this.donefunc.call(this);
 			return false;
 		}

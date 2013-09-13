@@ -4,7 +4,7 @@ Screen.level = {
 	init: function () {
 		var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
-		this.player = new Player().init(game.tw * 7, game.th * 5, this);
+		this.player = new Player().init(game.tw * 2, game.th * 5, this);
 		this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
 		this.map = Map.init(tiles, this.camera);
 
@@ -43,20 +43,26 @@ Screen.level = {
 			return p.tick();
 		});
 
+		// Generate a ghoul
 		if (Math.random() < 0.01 && this.ghouls.length < 35) {
 			var empty = false,
 				x,
 				y;
 			while (!empty) {
 				x = Math.random() * (this.map.cellW - 4) | 0;
-				y = (Math.random() * (this.map.cellH - 4) | 0) + 2;
-				empty = true;
-				for (var i = 0; i < 4; i++) {
-					if (this.map.cells[y][x + i] > this.map.walkable ||
-						this.map.cells[y - 1][x + i] > this.map.walkable ||
-						this.map.cells[y + 1][x + i] > this.map.walkable ) {
-						empty = false;
-						break;
+				y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
+
+				var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);
+
+				if (dist < (5 - this.player.complete()) * 600) {
+					empty = true;
+					for (var i = 0; i < 4; i++) {
+						if (this.map.cells[y][x + i] > this.map.walkable ||
+							this.map.cells[y - 1][x + i] > this.map.walkable ||
+							this.map.cells[y + 1][x + i] > this.map.walkable ) {
+							empty = false;
+							break;
+						}
 					}
 				}
 			}
@@ -109,15 +115,17 @@ Screen.level = {
 
 	firstPickup: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A GHOUL TRAP...", 40, 60);
-			game.res.font(c, "TO ACTIVATE IT, HOLD DOWN AND FIRE.", 40, 100);
-			game.res.font(c, "CATCH A GHOUL TO FIND YOUR WAY.", 40, 150);
+			game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
+			game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
+			game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
+			game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
+			game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
 		});
 	},
 
 	firstPiece: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE HOLY GRAIL.", 40, 60);
+			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
 			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
 			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
 

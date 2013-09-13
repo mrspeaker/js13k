@@ -41,9 +41,10 @@ Screen.win = {
 
 		c.restore();
 
-		game.res.font(c, "YOU HAVE SAVED THE WOODS", 50, 140);
-		game.res.font(c, "AND EARNED " + this.xp + " YEARS OF REWARD.", 50, 170);
-		game.res.font(c, "SPEND IT WISELY.", 50, 235);
+		game.res.font(c, "YOU HAVE SAVED THE DAY AND DONE WELL.", 50, 140);
+		game.res.font(c, "RECLAIMING THE GRAIL'S ENERGY GAVE YOU", 50, 170);
+		game.res.font(c, this.xp + " YEARS OF REWARD.", 50, 200);
+		game.res.font(c, "PLUS IT WAS QUITE FUN.", 50, 260);
 	}
 
 };
