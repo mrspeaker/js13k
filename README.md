@@ -2,6 +2,9 @@
 
 # TODO
 
+- fullscreenable
+- background css / centering
+
 - spawn ghauls near player
 - better rooms
 - tutorial rooms

@@ -28,7 +28,7 @@ var game = {
 		var ctx = utils.createCanvas(720, 405, "board");
 		ctx.canvas.backgroundColor = COLOR.back_main;
 
-		document.body.appendChild(ctx.canvas);
+		document.querySelector("#b").appendChild(ctx.canvas);
 		return ctx;
 	},
 
