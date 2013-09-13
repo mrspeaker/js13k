@@ -154,8 +154,8 @@ Player.prototype.tickDead = function () {
 		this.deaded = false;
 	}
 
-	this.x += this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed;
-	this.y += this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed;
+	this.x += Math.abs(dx) < 20 ? 0 : (this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed);
+	this.y += Math.abs(dy) < 20 ? 0 : (this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed);
 
 };
 

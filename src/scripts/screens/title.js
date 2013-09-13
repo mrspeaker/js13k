@@ -31,7 +31,7 @@ Screen.title = {
 			}
 		}
 
-		game.res.font(c, "JS13K", 15 + Math.sin(Date.now() / 300) * 5, 10 + Math.cos(Date.now() / 200) * 2);
+		game.res.font(c, "GLOWBOUGS", 15 + Math.sin(Date.now() / 300) * 5, 10 + Math.cos(Date.now() / 200) * 2);
 		game.res.font(c, "BY", 10, 40);
 		game.res.font(c, "MR SPEAKER", 10, 70);
 
