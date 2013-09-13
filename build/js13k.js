@@ -163,7 +163,6 @@ var COLOR = {
 			"jump": function() {
 				if(!c) return;
 
-				console.log(Date.now() - audio.jumpedat)
 				if (Date.now() - audio.jumpedat < 100) {
 					return;
 				}
