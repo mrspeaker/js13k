@@ -103,6 +103,8 @@ Screen.level = {
 			this.particles[0].play(x, y);
 		}
 
+		audio.sfx.die();
+
 	},
 
 	firstPickup: function () {

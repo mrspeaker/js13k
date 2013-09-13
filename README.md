@@ -3,7 +3,6 @@
 # TODO
 
 - rename ghouls
-- add images to win screen
 - rewrite texts
 
 - no water on bottom room!

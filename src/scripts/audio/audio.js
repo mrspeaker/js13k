@@ -21,14 +21,6 @@
         gain.gain.linearRampToValueAtTime(0, time + a + d + duration + r);
     }
 
-    // trigger: function(time) {
-    //     this.noise.start(time, 1);
-    //     envelope(this.noise.gain, time, this.volume, 0.05,
-    //     0.01, 0.03, 0.25, this.release);
-    //     this.noise.filter.frequency.setValueAtTime(this.freqFrom, time);
-    //     this.noise.filter.frequency.linearRampToValueAtTime(this.freqTo, time + 0.1);
-    // }
-
 	function noise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
 			data = buf.getChannelData(0);
@@ -73,12 +65,13 @@
 			shoot: function () {
 				if(!c) return;
 				var now = c.currentTime;
-				var s = noise();
+				var s = audio.noise;
 				var f = c.createBiquadFilter();
 				var g = audio.createGain();
-				g.gain.value = 0.12;
-				var start = Math.random() * 2000 + 500 | 0;
 
+				envelope(g, now, 0.5, 0.04, 0.01, 0.01, 0.1, 0.1);
+
+				var start = Math.random() * 2000 + 500 | 0;
 				f.Q.value = 10;
 				f.frequency.value = start;
 				f.frequency.setValueAtTime(start, now);
@@ -88,8 +81,6 @@
 				f.connect(g);
 				g.connect(audio.master);
 
-				audio.start(s, now);
-				audio.stop(s, now + 0.04);
 			},
 
 			pickup: function () {
@@ -136,6 +127,27 @@
 
 				audio.start(o, 0);
 				audio.stop(o, now + 0.32);
+			},
+
+			die: function () {
+				if(!c) return;
+				var now = c.currentTime,
+					s = audio.noise,
+					f = c.createBiquadFilter(),
+					g = audio.createGain();
+
+				envelope(g, now, 0.6, 0.5, 0.01, 0.01, 0.4, 0.08);
+
+				var start = Math.random() * 20000 + 500 | 0;
+				f.Q.value = 10;
+				f.frequency.value = start;
+				f.frequency.setValueAtTime(start, now);
+				f.frequency.linearRampToValueAtTime(200, now + 0.5);
+
+				s.connect(f);
+				f.connect(g);
+				g.connect(audio.master);
+
 			}
 		},
 
@@ -173,6 +185,10 @@
 				document.querySelector("#na").style.display = "block";
 				return;
 			}
+
+			this.noise = noise();
+			this.start(this.noise, 0);
+
 
 			this.master = audio.createGain();
 			this.master.gain.value = 0.5;

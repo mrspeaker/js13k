@@ -233,6 +233,9 @@ Player.prototype.isMoving = function () {
 };
 
 Player.prototype.killed = function (e) {
+	if (this.deaded) {
+		return;
+	}
 	e && this.level.xp({xpValue:e.xpAttackValue});
 	this.level.explode(this.x + this.w / 2, this.y + this.h);
 	this.deaded = true;

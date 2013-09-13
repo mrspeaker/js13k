@@ -150,14 +150,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
         gain.gain.linearRampToValueAtTime(0, time + a + d + duration + r);
     }
 
-    // trigger: function(time) {
-    //     this.noise.start(time, 1);
-    //     envelope(this.noise.gain, time, this.volume, 0.05,
-    //     0.01, 0.03, 0.25, this.release);
-    //     this.noise.filter.frequency.setValueAtTime(this.freqFrom, time);
-    //     this.noise.filter.frequency.linearRampToValueAtTime(this.freqTo, time + 0.1);
-    // }
-
 	function noise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
 			data = buf.getChannelData(0);
@@ -177,10 +169,11 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 		sfx: {
 			"jump": function() {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -194,18 +187,20 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.1);
 
-				o.start(0);
-				o.stop(now + 0.1);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.1);
 			},
 
 			shoot: function () {
+				if(!c) return;
 				var now = c.currentTime;
-				var s = noise();
+				var s = audio.noise;
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
-				g.gain.value = 0.12;
-				var start = Math.random() * 2000 + 500 | 0;
+				var g = audio.createGain();
 
+				envelope(g, now, 0.5, 0.04, 0.01, 0.01, 0.1, 0.1);
+
+				var start = Math.random() * 2000 + 500 | 0;
 				f.Q.value = 10;
 				f.frequency.value = start;
 				f.frequency.setValueAtTime(start, now);
@@ -215,15 +210,16 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				f.connect(g);
 				g.connect(audio.master);
 
-				s.start(now, 0.04);
-				s.stop(now + 0.04);
+				//audio.start(s, now);
+				//audio.stop(s, now + 0.04);
 			},
 
 			pickup: function () {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -237,15 +233,16 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				o.frequency.setValueAtTime(600, now);
 				o.frequency.linearRampToValueAtTime(2600, now + 0.12);
 
-				o.start(0);
-				o.stop(now + 0.12);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.12);
 			},
 
 			swiggle: function () {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -259,15 +256,51 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				o.frequency.setValueAtTime(50, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.32);
 
-				o.start(0);
-				o.stop(now + 0.32);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.32);
 			}
 		},
 
 		init: function () {
-			this.ctx = c = new (window.AudioContext || window.webkitAudioContext)();
+			// Some "polyfilling" of webaudio api
+			if (window.AudioContext) {
+				c = new AudioContext();
+			} else if (window.webkitAudioContext) {
+				c = new webkitAudioContext();
+			}
 
-			this.master = c.createGain();
+			this.createGain = function () {
+				var node = null;
+				if (c.createGain) { node = c.createGain(); }
+				else if (c.createGainNode) { node = c.createGainNode(); }
+				else { this.ctx = c = null; }
+				return node
+			}
+			this.start = function (node, time) {
+				if (node.start) { node.start(time); }
+				else if (node.noteOn) { node.noteOn(time); }
+				else { this.ctx = c = null; }
+			}
+			this.stop = function (node, time) {
+				if (node.stop) { node.stop(time); }
+				else if (node.noteOff) { node.noteOff(time); }
+				else { this.ctx = c = null; }
+			}
+
+			if (c && (!this.createGain() || !c.createOscillator)) {
+				c = null;
+			}
+
+			if (!c) {
+				document.querySelector("#na").style.display = "block";
+				return;
+			}
+
+			this.noise = noise();
+			this.start(this.noise, 0);
+
+
+			this.master = audio.createGain();
 			this.master.gain.value = 0.5;
 			this.master.connect(c.destination);
 
@@ -1222,6 +1255,8 @@ var Player = function() {
 	this.deaded = false;
 	this.jumpHeight = -game.th - 1;
 
+	this.firing = 0;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
@@ -1314,6 +1349,7 @@ Player.prototype.tick = function (input, map) {
 		this.dir = 1;
 	}
 	if (input.pressed("fire") && !this.crouching) {
+		this.firing = 10;
 		this.projectiles.push(
 			new Spear().init(this.x, this.y, this.dir)
 		);
@@ -1354,8 +1390,8 @@ Player.prototype.tickDead = function () {
 		this.deaded = false;
 	}
 
-	this.x += this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed;
-	this.y += this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed;
+	this.x += Math.abs(dx) < 20 ? 0 : (this.x < this.checkpoint[0] ? deadSpeed : -deadSpeed);
+	this.y += Math.abs(dy) < 20 ? 0 : (this.y < this.checkpoint[1] ? deadSpeed : -deadSpeed);
 
 };
 
@@ -1502,6 +1538,12 @@ Player.prototype.render = function (c) {
 	c.fillRect(this.checkpoint[0], this.checkpoint[1] + game.th - 3, game.tw, 3);
 
 
+	// Draw thrwing arm
+	if (this.firing-- > 0 && !this.onLadder) {
+		c.fillStyle = "hsl(55, 100%, 50%)";
+		c.fillRect(this.x + (4 * -this.dir) + 6 + (-this.firing / 5), this.y -2 , 2, 5);
+	}
+
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
 	});
@@ -1512,6 +1554,8 @@ Player.prototype.render = function (c) {
 
 	c.strokeStyle = "#000";
 	c.lineWidth = 2;
+
+
 
 	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";
@@ -1529,6 +1573,8 @@ Player.prototype.render = function (c) {
 	}
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
+
+
 	if (this.isMoving()) {
 		if ((Date.now() / 100 | 0) % 2 === 0) {
 			// legs and arms
@@ -1576,7 +1622,6 @@ Player.prototype.render = function (c) {
 			c.fillRect(this.x + 8, this.y + 20, 3, 2);
 		}
 	}
-
 
 };
 var Spear = function (){
@@ -1865,6 +1910,7 @@ window.Screen = window.Screen || {};
 Screen.title = {
 
 	count: 0,
+	stars: [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8],
 
 	init: function () {
 		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
@@ -1875,6 +1921,18 @@ Screen.title = {
 
 		this.count++;
 
+		if ((this.count - 1) % 100 === 0) {
+			this.stars = this.stars.map(function () {
+				return [
+					Math.random() * game.ctx.w | 0,
+					Math.random() * game.ctx.h | 0,
+					Math.random() * 7 | 0]
+			});
+		}
+		this.stars = this.stars.map(function (s) {
+			return [s[0] + Math.random() * 2 - 1, s[1], s[2]]
+		});
+
 		if (this.count > 50 && input.pressed("fire")) {
 			game.setScreen(Screen.level);
 		}
@@ -1883,7 +1941,16 @@ Screen.title = {
 
 	render: function (c) {
 
-		c.clearRect(0, 0, c.w, c.h);
+		c.fillStyle = "hsla(211, 20%, 37%, 0.15)";
+		c.fillRect(0, 0, c.w, c.h);
+		c.fillStyle = "hsla(65, 40%, 70%, 0.2)";
+
+		this.stars.forEach(function (s) {
+			c.beginPath();
+			c.arc(s[0], s[1], s[2], 0, Math.PI * 2, false);
+			c.fill();
+		});
+
 		c.save();
 		c.scale(3, 3);
 
@@ -1894,12 +1961,58 @@ Screen.title = {
 			}
 		}
 
-		game.res.font(c, "JS13K", 15 + Math.sin(Date.now() / 300) * 5, 10 + Math.cos(Date.now() / 200) * 2);
-		game.res.font(c, "BY", 10, 40);
-		game.res.font(c, "MR SPEAKER", 10, 70);
+		game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
+		game.res.font(c, "BY", 5, 84);
+		game.res.font(c, "MR SPEAKER", 5, 115);
 
 
 		c.restore();
+	}
+
+};
+window.Screen = window.Screen || {};
+Screen.win = {
+
+	count: 0,
+
+	init: function (xp) {
+		this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
+		this.xp = xp || 0;
+		return this;
+	},
+
+	tick: function (input) {
+
+		this.count++;
+
+		if (this.count > 50 && input.pressed("fire")) {
+			game.reset();
+		}
+
+	},
+
+	render: function (c) {
+
+		c.fillStyle = "hsl(" + ((this.count + 80) / 3 % 360 | 0) + ", 60%, 40%)";
+		c.fillRect(0, 0, c.w, c.h);
+
+		c.save();
+		c.scale(3, 3);
+
+		for (var i = 0; i < 12; i++) {
+			this.tiles.render(c, 5, 0, i * game.tw, 100);
+			for (var j = 0; j < 5; j++) {
+				this.tiles.render(c, 7, 0, i * game.tw, game.th * (j + 1) + 100);
+			}
+		}
+
+		game.res.font(c, "KING GLOWBOUG", 15 + Math.sin(Date.now() / 300) * 5, 10 + Math.cos(Date.now() / 200) * 2);
+
+		c.restore();
+
+		game.res.font(c, "YOU HAVE SAVED THE WOODS", 50, 140);
+		game.res.font(c, "AND EARNED " + this.xp + " YEARS OF REWARD.", 50, 170);
+		game.res.font(c, "SPEND IT WISELY.", 50, 235);
 	}
 
 };
@@ -2030,13 +2143,15 @@ Screen.level = {
 
 	winsTheGame: function () {
 
-		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
-			game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
-			game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
-		}, function () {
-			game.reset();
-		});
+		game.setScreen(Screen.win, this.player.xp);
+
+		// game.dialog = new Dialog().init(function (c) {
+		// 	game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
+		// 	game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
+		// 	game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
+		// }, function () {
+		// 	game.reset();
+		// });
 	},
 
 	render: function (c) {
@@ -2138,6 +2253,9 @@ var game = {
 	th: 24,
 
 	dialog: null,
+	screen: null,
+	screenPrev: null,
+	screenFade: 0,
 
 	init: function () {
 		this.ctx = this.addMainCanvas();
@@ -2154,8 +2272,10 @@ var game = {
 
 	},
 
-	setScreen: function (screen) {
-		this.screen = screen.init();
+	setScreen: function (screen, arg) {
+		this.screenPrev = this.screen;
+		this.screen = screen.init(arg);
+		this.screenFade = 75;
 	},
 
 	addMainCanvas: function () {
@@ -2172,6 +2292,7 @@ var game = {
 	},
 
 	run: function (d) {
+
 		if (!this.dialog) {
 			this.screen.tick(this.input);
 		} else {
@@ -2182,6 +2303,11 @@ var game = {
 		this.input.tick();
 
 		this.screen.render(this.ctx);
+		if (this.screenFade-- > 0) {
+			this.ctx.globalAlpha = this.screenFade / 75;
+			this.screenPrev && this.screenPrev.render(this.ctx);
+			this.ctx.globalAlpha = 1;
+		}
 		this.dialog && this.dialog.render(this.ctx);
 
 		window.requestAnimationFrame(function () {
