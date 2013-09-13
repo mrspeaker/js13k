@@ -48,10 +48,11 @@
 
 		sfx: {
 			"jump": function() {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -65,15 +66,16 @@
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.1);
 
-				o.start(0);
-				o.stop(now + 0.1);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.1);
 			},
 
 			shoot: function () {
+				if(!c) return;
 				var now = c.currentTime;
 				var s = noise();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				g.gain.value = 0.12;
 				var start = Math.random() * 2000 + 500 | 0;
 
@@ -86,15 +88,16 @@
 				f.connect(g);
 				g.connect(audio.master);
 
-				s.start(now, 0.04);
-				s.stop(now + 0.04);
+				audio.start(s, now);
+				audio.stop(s, now + 0.04);
 			},
 
 			pickup: function () {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -108,15 +111,16 @@
 				o.frequency.setValueAtTime(600, now);
 				o.frequency.linearRampToValueAtTime(2600, now + 0.12);
 
-				o.start(0);
-				o.stop(now + 0.12);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.12);
 			},
 
 			swiggle: function () {
+				if(!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator();
 				var f = c.createBiquadFilter();
-				var g = c.createGain();
+				var g = audio.createGain();
 				o.connect(f);
 				f.connect(g);
 				g.connect(audio.master);
@@ -130,15 +134,37 @@
 				o.frequency.setValueAtTime(50, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.32);
 
-				o.start(0);
-				o.stop(now + 0.32);
+				audio.start(o, 0);
+				audio.stop(o, now + 0.32);
 			}
 		},
 
 		init: function () {
 			this.ctx = c = new (window.AudioContext || window.webkitAudioContext)();
+			this.createGain = function () {
+				var node = null;
+				if (c.createGain) { node = c.createGain(); }
+				else if (c.createGainNode) { node = c.createGainNode(); }
+				return node
+			}
+			this.start = function (node, time) {
+				if (node.start) { node.start(time);
+				} else if (node.noteOn) { node.noteOn(time); }
+			}
+			this.stop = function (node, time) {
+				if (node.stop) { node.stop(time);
+				} else if (node.noteOff) { node.noteOff(time); }
+			}
 
-			this.master = c.createGain();
+			if (c && !this.createGain()) {
+				c = null;
+			}
+			if (!c) {
+				document.querySelector("#na").display = "inline";
+				return;
+			}
+
+			this.master = audio.createGain();
 			this.master.gain.value = 0.5;
 			this.master.connect(c.destination);
 

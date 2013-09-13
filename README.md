@@ -2,7 +2,8 @@
 
 # TODO
 
-- spawn ghauls near player
+- spawn ghauls near player?
+- no water on bottom room!
 - better rooms
 - tutorial rooms
 - balancing - rough
@@ -10,7 +11,6 @@
 - tune
 - building anim
 - balancing - fine
-- player throw anim
 
 - rename ghouls
 - rewrite texts
