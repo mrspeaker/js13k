@@ -22,6 +22,8 @@ var Player = function() {
 	this.deaded = false;
 	this.jumpHeight = -game.th - 1;
 
+	this.firing = 0;
+
 };
 Player.prototype = new Entity;
 Player.prototype.init = function (x, y, level) {
@@ -114,6 +116,7 @@ Player.prototype.tick = function (input, map) {
 		this.dir = 1;
 	}
 	if (input.pressed("fire") && !this.crouching) {
+		this.firing = 10;
 		this.projectiles.push(
 			new Spear().init(this.x, this.y, this.dir)
 		);
@@ -302,6 +305,12 @@ Player.prototype.render = function (c) {
 	c.fillRect(this.checkpoint[0], this.checkpoint[1] + game.th - 3, game.tw, 3);
 
 
+	// Draw thrwing arm
+	if (this.firing-- > 0 && !this.onLadder) {
+		c.fillStyle = "hsl(55, 100%, 50%)";
+		c.fillRect(this.x + (4 * -this.dir) + 6 + (-this.firing / 5), this.y -2 , 2, 5);
+	}
+
 	this.projectiles.forEach(function (p) {
 		return p.render(c);
 	});
@@ -312,6 +321,8 @@ Player.prototype.render = function (c) {
 
 	c.strokeStyle = "#000";
 	c.lineWidth = 2;
+
+
 
 	// body
 	c.fillStyle = "hsl(10, 70%, 30%)";
@@ -329,6 +340,8 @@ Player.prototype.render = function (c) {
 	}
 
 	c.fillStyle = "hsl(55, 100%, 50%)";
+
+
 	if (this.isMoving()) {
 		if ((Date.now() / 100 | 0) % 2 === 0) {
 			// legs and arms
@@ -376,6 +389,5 @@ Player.prototype.render = function (c) {
 			c.fillRect(this.x + 8, this.y + 20, 3, 2);
 		}
 	}
-
 
 };
