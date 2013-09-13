@@ -2,8 +2,14 @@
 
 # TODO
 
-- spawn ghauls near player?
+- rename ghouls
+- add images to win screen
+- rewrite texts
+
 - no water on bottom room!
+- stop multi-blerg noises when stuck
+
+- spawn ghauls near player?
 - better rooms
 - tutorial rooms
 - balancing - rough
@@ -12,9 +18,3 @@
 - building anim
 - balancing - fine
 
-- rename ghouls
-- rewrite texts
-- add images to win screen
-
-- audio in firefox
-- support no-audio version

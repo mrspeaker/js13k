@@ -125,13 +125,15 @@ Screen.level = {
 
 	winsTheGame: function () {
 
-		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
-			game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
-			game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
-		}, function () {
-			game.reset();
-		});
+		game.setScreen(Screen.win, this.player.xp);
+
+		// game.dialog = new Dialog().init(function (c) {
+		// 	game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
+		// 	game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
+		// 	game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
+		// }, function () {
+		// 	game.reset();
+		// });
 	},
 
 	render: function (c) {

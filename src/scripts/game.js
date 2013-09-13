@@ -4,6 +4,9 @@ var game = {
 	th: 24,
 
 	dialog: null,
+	screen: null,
+	screenPrev: null,
+	screenFade: 0,
 
 	init: function () {
 		this.ctx = this.addMainCanvas();
@@ -20,8 +23,10 @@ var game = {
 
 	},
 
-	setScreen: function (screen) {
-		this.screen = screen.init();
+	setScreen: function (screen, arg) {
+		this.screenPrev = this.screen;
+		this.screen = screen.init(arg);
+		this.screenFade = 75;
 	},
 
 	addMainCanvas: function () {
@@ -38,6 +43,7 @@ var game = {
 	},
 
 	run: function (d) {
+
 		if (!this.dialog) {
 			this.screen.tick(this.input);
 		} else {
@@ -48,6 +54,11 @@ var game = {
 		this.input.tick();
 
 		this.screen.render(this.ctx);
+		if (this.screenFade-- > 0) {
+			this.ctx.globalAlpha = this.screenFade / 75;
+			this.screenPrev && this.screenPrev.render(this.ctx);
+			this.ctx.globalAlpha = 1;
+		}
 		this.dialog && this.dialog.render(this.ctx);
 
 		window.requestAnimationFrame(function () {

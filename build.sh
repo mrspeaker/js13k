@@ -32,6 +32,7 @@ src/scripts/entities/Trap.js \
 src/scripts/Camera.js \
 src/scripts/screens/Dialog.js \
 src/scripts/screens/title.js \
+src/scripts/screens/win.js \
 src/scripts/screens/level.js \
 src/scripts/Input.js \
 src/scripts/game.js \
