@@ -2,10 +2,10 @@ var Camera = {
 	x: 0,
 	y: 0,
 	xRange: 80,
-	yRange: 100,
+	yRange: 60,
 	zoom: 1,
-	init: function (entity, x, y, w, h) {
 
+	init: function (entity, x, y, w, h) {
 		this.entity = entity;
 		this.w = w;
 		this.h = h;
@@ -15,11 +15,12 @@ var Camera = {
 		this.track(entity);
 
 		return this;
-
 	},
+
 	setBounds: function (w, h) {
 		this.bounds = [w, h];
 	},
+
 	track: function (entity) {
 
 		var e = entity || this.entity;

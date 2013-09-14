@@ -28,6 +28,7 @@ Screen.level = {
 	},
 
 	tick: function (input) {
+
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghouls = this.ghouls.filter(function (g) {
@@ -43,15 +44,34 @@ Screen.level = {
 			return p.tick();
 		});
 
-		// Generate a ghoul
-		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+		this.generateEntities();
+
+		utils.checkCollisions([this.ghouls, this.player.projectiles]);
+		utils.checkCollisions([this.ghouls, this.player.traps]);
+
+		if (!this.player.deaded) {
+			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+			utils.checkCollision(this.player, this.pieces);
+			utils.checkCollision(this.player, this.pickups);
+			utils.checkCollision(this.player, this.ghouls);
+		}
+	},
+
+	generateEntities: function () {
+
 			var empty = false,
 				x,
 				y;
+
+		// Generate a ghoul
+		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+
+			// Find clear spot to spawn
 			while (!empty) {
 				x = Math.random() * (this.map.cellW - 4) | 0;
 				y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
 
+				// spawn somewhere near the player-ish (based on game completeness)
 				var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);
 
 				if (dist < (5 - this.player.complete()) * 600) {
@@ -69,23 +89,15 @@ Screen.level = {
 			this.ghouls.push(
 				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
+
+			// Angry ghouls chase the player.
 			// More likely to be angry if game more complete
 			if (Math.random() < 0.4 * ((this.player.complete() + 1) / 4)) {
 				this.ghouls[this.ghouls.length - 1].isAngry = true;
 			}
 		}
 
-		utils.checkCollisions([this.ghouls, this.player.projectiles]);
-		utils.checkCollisions([this.ghouls, this.player.traps]);
-
-		if (!this.player.deaded) {
-			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
-			utils.checkCollision(this.player, this.pieces);
-			utils.checkCollision(this.player, this.pickups);
-			utils.checkCollision(this.player, this.ghouls);
-		}
 	},
-
 
 	xp: function (e) {
 
@@ -115,35 +127,27 @@ Screen.level = {
 
 	firstPickup: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
-			game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
-			game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
-			game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
-			game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
+		game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
+		game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
+		game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
+		game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
+		game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
 		});
 	},
 
 	firstPiece: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
-			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
-			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
+		game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
+		game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
+		game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
 
-			game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
+		game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
 		});
 	},
 
 	winsTheGame: function () {
 
 		game.setScreen(Screen.win, this.player.xp);
-
-		// game.dialog = new Dialog().init(function (c) {
-		// 	game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
-		// 	game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
-		// 	game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
-		// }, function () {
-		// 	game.reset();
-		// });
 	},
 
 	render: function (c) {
