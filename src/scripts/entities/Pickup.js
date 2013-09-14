@@ -3,17 +3,22 @@ var Pickup = function (){
 	this.h = 24;
 	this.xpValue = 11;
 };
+
 Pickup.prototype = new Entity;
+
 Pickup.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
 	return this;
 }
+
 Pickup.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Pickup.prototype.hit = function (e) {};
+
 Pickup.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.fillStyle = "#a00";

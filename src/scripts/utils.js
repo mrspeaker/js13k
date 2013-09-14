@@ -1,12 +1,9 @@
 var utils = {
 	snap: function(value, snapSize) {
-
 		return Math.floor(value / snapSize) * snapSize;
-
 	},
 
 	checkCollision: function (entity, entities, cbName) {
-
 		var i,
 			a = entity,
 			b,
@@ -31,11 +28,9 @@ var utils = {
 				b[cbName] && b[cbName](a);
 			}
 		}
-
 	},
 
 	checkCollisions: function (entities, cbName) {
-
 		var i,
 			j,
 			a,
@@ -84,22 +79,18 @@ var utils = {
 	},
 
 	dist: function (a, b) {
-
 		var dx = a[0] - b[0],
 			dy = a[1] - b[1];
 
 		return Math.sqrt(dx * dx + dy * dy);
-
 	},
 
 	angleBetween: function (a, b) {
-
 		var dx = a.x - b.x,
 			dy = a.y - b.y,
 			angle = Math.atan2(dy, dx);
 
 		return angle % Math.PI;
-
 	}
 
 

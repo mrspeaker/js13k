@@ -28,7 +28,9 @@ var Player = function() {
 	this.count = 0;
 
 };
+
 Player.prototype = new Entity;
+
 Player.prototype.init = function (x, y, level) {
 
 	this.x = x;
@@ -50,11 +52,13 @@ Player.prototype.init = function (x, y, level) {
 	}
 
 	return this;
-},
+};
+
 Player.prototype.complete = function () {
 	var p = this.pieces;
 	return p[0] + p[1] + p[2] + p[3];
 };
+
 Player.prototype.tick = function (input, map) {
 
 	this.count++;
@@ -146,11 +150,13 @@ Player.prototype.tick = function (input, map) {
 	}
 
 };
+
 Player.prototype.jump = function () {
 	this.acc[1] = this.jumpHeight;
 	this.vel[1] = 0;
 	this.falling = true;
 };
+
 Player.prototype.tickDead = function () {
 	var dx = this.x - this.checkpoint[0],
 		dy = this.y - this.checkpoint[1],
@@ -187,14 +193,14 @@ Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
 		this.level.xp(e);
-		// Befor you needed multipe pickups to make a trap. remove this.
-		audio.sfx.pickup();
 		this.numTraps++;
+		audio.sfx.pickup();
 		if(this.numPickups++ === 0 || (this.everLaidTrap === false && this.count > 6000)) {
 			this.level.firstPickup();
 		};
 		return;
 	}
+
 	if (e instanceof Ghoul) {
 		this.killed(e);
 		return;
@@ -222,6 +228,7 @@ Player.prototype.hit = function (e) {
 		return;
 	}
 };
+
 Player.prototype.hitSpear = function (spear) {
 	if (spear.stuck) {
 		this.onLadder = true;
@@ -247,13 +254,14 @@ Player.prototype.killed = function (e) {
 	this.level.explode(this.x + this.w / 2, this.y + this.h);
 	this.deaded = true;
 };
-Player.prototype.hitBlocks = function (x, y) {
 
-	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
+Player.prototype.hitBlocks = function (x, y) {
+	var all = (x || []).concat(y || []);
+	if (all.indexOf(BLOCKS.type.LAVA) > -1) {
 		this.killed();
 	}
-
 };
+
 Player.prototype.checkBlocks = function (input, map) {
 
 	this.wasOnLadder = this.onLadder;
@@ -299,6 +307,7 @@ Player.prototype.checkBlocks = function (input, map) {
 	}
 
 };
+
 Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;

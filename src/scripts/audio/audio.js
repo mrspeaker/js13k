@@ -86,7 +86,6 @@
 				gf[1].frequency.linearRampToValueAtTime(6000, now + 0.04);
 				envelope(gf[0], now, 0.7, 0.04, 0.01, 0.01, 0.1, 0.1);
 				gf[0].connect(audio.master);
-
 			},
 
 			pickup: function () {
@@ -136,7 +135,7 @@
 
 				gainWithFilter(o, 0.10, 3000, 10)[0].connect(audio.master);
 
-				o.type = "square"
+				o.type = "square";
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(50, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.32);
@@ -195,7 +194,6 @@
 			this.master = createGain();
 			this.master.gain.value = 1;
 			this.master.connect(c.destination);
-
 		}
 
 	};

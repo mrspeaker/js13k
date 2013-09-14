@@ -105,7 +105,6 @@ var GEN = {
 		c.putImageData(pixels, 0, 0);
 
 		return c.canvas;
-
 	},
 
 	font: function () {
@@ -119,7 +118,7 @@ var GEN = {
 				return pix.data[(ro * pix.width + co) * 4 + i] +
 					pix.data[(ro * pix.width + co + 1) * 4 + i] +
 					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] +
-					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4;
 			}
 
 		ctx.fillStyle = COLOR.font_main;

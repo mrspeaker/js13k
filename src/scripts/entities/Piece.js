@@ -3,7 +3,9 @@ var Piece = function (){
 	this.h = 24;
 	this.xpValue = 32;
 };
+
 Piece.prototype = new Entity;
+
 Piece.prototype.init = function (x, y, id) {
 	this.x = x;
 	this.y = y;
@@ -11,10 +13,13 @@ Piece.prototype.init = function (x, y, id) {
 
 	return this;
 }
+
 Piece.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Piece.prototype.hit = function (e) {};
+
 Piece.prototype.render = function (c) {
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;

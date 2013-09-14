@@ -15,7 +15,9 @@ var Ghoul = function () {
 	this.visible = false;
 	this.notVisibleFor = 0;
 };
+
 Ghoul.prototype = new Entity;
+
 Ghoul.prototype.init = function (x, y, dir, level) {
 	this.x = x;
 	this.y = y;
@@ -36,6 +38,7 @@ Ghoul.prototype.init = function (x, y, dir, level) {
 
 	return this;
 },
+
 Ghoul.prototype.hit = function (e) {
 	if (e instanceof Spear && !e.stuck) {
 		this.knockBack = e.dir === this.dir ? 3 * e.dir : -7 * this.dir;
@@ -50,6 +53,7 @@ Ghoul.prototype.hit = function (e) {
 		this.level.explode(this.x + this.w / 2, this.y + this.h);
 	}
 };
+
 Ghoul.prototype.tick = function (map) {
 	var yo = 0,
 		xo = 0,
@@ -107,11 +111,12 @@ Ghoul.prototype.tick = function (map) {
 
 	return !(this.remove);
 };
+
 Ghoul.prototype.hitBlocks = function (x, y) {
 	this.dir *= -1;
 };
-Ghoul.prototype.render = function (c) {
 
+Ghoul.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.lineWidth = 2;
 
@@ -134,6 +139,4 @@ Ghoul.prototype.render = function (c) {
 	c.fillRect(this.x + 2, this.y +20, 8, 3);
 	c.strokeRect(this.x + 2, this.y +20, 8, 3);
 	c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
-
-
 };

@@ -103,6 +103,7 @@ Entity.prototype = {
 		return [xo, yo];
 
 	},
+
 	render: function(c) {
 		c.fillStyle = "red";
 		c.fillRect(this.x, this.y, this.w, this.h);

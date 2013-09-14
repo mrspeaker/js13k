@@ -14,8 +14,8 @@ Screen.level = {
 		this.pieces = this.map.pieces.map(function (p, i) {
 			return new Piece().init(p[0] * game.tw, p[1] * game.th, i)
 		});
-		this.ghouls = [];
 
+		this.ghouls = [];
 		this.particles = [];
 
 		for (var i = 0; i < 5; i++) {
@@ -100,16 +100,15 @@ Screen.level = {
 	},
 
 	xp: function (e) {
-
 		this.player.xp += e.xpValue;
-
 	},
 
 	explode: function (x, y) {
-
-		var played = false;
-		for (var i = 0; i < this.particles.length; i++) {
-			var p = this.particles[i];
+		var played = false,
+			i,
+			p;
+		for (i = 0; i < this.particles.length; i++) {
+			p = this.particles[i];
 			if (!p.running) {
 				p.play(x, y);
 				played = true;
@@ -122,7 +121,6 @@ Screen.level = {
 		}
 
 		audio.sfx.die();
-
 	},
 
 	firstPickup: function () {

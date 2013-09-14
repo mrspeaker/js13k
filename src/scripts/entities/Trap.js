@@ -8,15 +8,18 @@ var Trap = function (){
 	this.activated = false;
 };
 Trap.prototype = new Entity;
+
 Trap.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
 	return this;
 }
+
 Trap.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Trap.prototype.hit = function (e) {
 	if (e instanceof Ghoul) {
 		this.activated = true;
@@ -25,6 +28,7 @@ Trap.prototype.hit = function (e) {
 		}
 	}
 };
+
 Trap.prototype.setClosestPiece = function (pieces) {
 	var self = this;
 	this.closest = pieces.reduce(function (acc, p) {
@@ -40,9 +44,12 @@ Trap.prototype.setClosestPiece = function (pieces) {
 		return acc;
 	}, [null, -1, -1]);
 };
+
 Trap.prototype.render = function (c) {
 
 	if (this.activated && this.closest[0]) {
+
+		// Draw the arrow
 		c.save();
 		c.translate(this.x + this.w / 2, this.y + this.h / 2);
 		c.rotate(this.closest[2] + Math.PI * 1.5);
