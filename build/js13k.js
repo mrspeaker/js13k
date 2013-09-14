@@ -3,13 +3,10 @@
 */
 var utils = {
 	snap: function(value, snapSize) {
-
 		return Math.floor(value / snapSize) * snapSize;
-
 	},
 
 	checkCollision: function (entity, entities, cbName) {
-
 		var i,
 			a = entity,
 			b,
@@ -34,11 +31,9 @@ var utils = {
 				b[cbName] && b[cbName](a);
 			}
 		}
-
 	},
 
 	checkCollisions: function (entities, cbName) {
-
 		var i,
 			j,
 			a,
@@ -87,22 +82,18 @@ var utils = {
 	},
 
 	dist: function (a, b) {
-
 		var dx = a[0] - b[0],
 			dy = a[1] - b[1];
 
 		return Math.sqrt(dx * dx + dy * dy);
-
 	},
 
 	angleBetween: function (a, b) {
-
 		var dx = a.x - b.x,
 			dy = a.y - b.y,
 			angle = Math.atan2(dy, dx);
 
 		return angle % Math.PI;
-
 	}
 
 
@@ -132,15 +123,30 @@ var COLOR = {
 	var c;
 
 	function envelope(gain, time, volume, duration, a, d, s, r) {
-        gain.gain.cancelScheduledValues(0);
-        gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(volume, time + a);
-        gain.gain.linearRampToValueAtTime(volume * s, time + a + d);
-        gain.gain.setValueAtTime(volume * s, time + a + d + duration);
-        gain.gain.linearRampToValueAtTime(0, time + a + d + duration + r);
+		var g = gain.gain;
+        g.cancelScheduledValues(0);
+        g.setValueAtTime(0, time);
+        g.linearRampToValueAtTime(volume, time + a);
+        g.linearRampToValueAtTime(volume * s, time + a + d);
+        g.setValueAtTime(volume * s, time + a + d + duration);
+        g.linearRampToValueAtTime(0, time + a + d + duration + r);
     }
 
-	function noise () {
+    function gainWithFilter(input, gain, freq, q) {
+		var f = c.createBiquadFilter(),
+			g = createGain();
+
+		input.connect(f);
+		f.connect(g);
+
+		g.gain.value = gain;
+		f.frequency.value = freq;
+		f.Q.value = q;
+
+		return [g, f];
+    }
+
+	function createNoise () {
 		var buf = c.createBuffer(1, (60 / 120) * c.sampleRate, c.sampleRate),
 			data = buf.getChannelData(0),
 			node;
@@ -155,126 +161,101 @@ var COLOR = {
 		return node;
 	}
 
+	function createGain() {
+		var node;
+		if (c.createGain) { node = c.createGain(); }
+		else if (c.createGainNode) { node = c.createGainNode(); }
+		else { audio.ctx = c = null; }
+		return node;
+	}
+
 	window.audio = {
 
-		jumpedat: Date.now(),
+		jumpedAt: Date.now(),
 
 		sfx: {
-			"jump": function() {
-				if(!c) return;
-
-				if (Date.now() - audio.jumpedat < 100) {
+			jump: function() {
+				if (!c || Date.now() - audio.jumpedAt < 100) {
 					return;
 				}
-				audio.jumpedat = Date.now();
+				audio.jumpedAt = Date.now();
 
-				var now = c.currentTime;
-				var o = c.createOscillator();
-				var f = c.createBiquadFilter();
-				var g = audio.createGain();
-				o.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
-
-				g.gain.value = 0.35;
-				f.frequency.value = 2000;
-				f.Q.value = 3;
+				var now = c.currentTime,
+					o = c.createOscillator();
 
 				o.type = "sine"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(400, now + 0.09);
 
+				gainWithFilter(o, 0.35, 2000, 3)[0].connect(audio.master);
+
 				audio.start(o, now);
 				audio.stop(o, now + 0.1);
 			},
 
 			shoot: function () {
-				if(!c) return;
-				var now = c.currentTime;
-				var s = audio.noise;
-				var f = c.createBiquadFilter();
-				var g = audio.createGain();
+				if (!c) return;
+				var now = c.currentTime,
+					start = Math.random() * 2000 + 500 | 0,
+					s = audio.noise,
+					gf;
 
-				envelope(g, now, 0.7, 0.04, 0.01, 0.01, 0.1, 0.1);
-
-				var start = Math.random() * 2000 + 500 | 0;
-				f.Q.value = 10;
-				f.frequency.value = start;
-				f.frequency.setValueAtTime(start, now);
-				f.frequency.linearRampToValueAtTime(6000, now + 0.04);
-
-				s.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
-
+				gf = gainWithFilter(s, 1, start, 10);
+				gf[1].frequency.setValueAtTime(start, now);
+				gf[1].frequency.linearRampToValueAtTime(6000, now + 0.04);
+				envelope(gf[0], now, 0.7, 0.04, 0.01, 0.01, 0.1, 0.1);
+				gf[0].connect(audio.master);
 			},
 
 			pickup: function () {
-				if(!c) return;
+				if (!c) return;
 				var now = c.currentTime,
-					o = c.createOscillator(),
-					f = c.createBiquadFilter(),
-					g = audio.createGain();
-				o.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
-
-				g.gain.value = 0.12;
-				f.frequency.value = 3000;
-				f.Q.value = 10;
+					o = c.createOscillator();
 
 				o.type = "sine"
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(600, now);
 				o.frequency.linearRampToValueAtTime(2600, now + 0.12);
 
+				gainWithFilter(o, 0.12, 3000, 10)[0].connect(audio.master);
+
 				audio.start(o, 0);
 				audio.stop(o, now + 0.12);
 			},
 
 			collect: function () {
-				if(!c) return;
+				if (!c) return;
 				var now = c.currentTime;
 				var o = c.createOscillator(),
 					lfo = c.createOscillator(),
-					lfogain = audio.createGain();
-				var f = c.createBiquadFilter();
-				var g = audio.createGain();
+					lfoGain = createGain();
+
+				gainWithFilter(o, 1, 350, 1)[0].connect(audio.master);
 
 				o.type = "sine"
-				o.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
 
 				lfo.type = "sine";
 				lfo.frequency.value = 10;
-				lfogain.gain.setValueAtTime(10, now);
-				lfogain.gain.linearRampToValueAtTime(200, now + 1);
-				lfo.connect(lfogain);
-				lfogain.connect(o.frequency);
+				lfoGain.gain.setValueAtTime(10, now);
+				lfoGain.gain.linearRampToValueAtTime(200, now + 1);
+				lfo.connect(lfoGain);
+				lfoGain.connect(o.frequency);
 
-				g.gain.value = 1;
 				audio.start(lfo, now);
 				audio.start(o, now);
+				audio.stop(lfo, now + 1);
 				audio.stop(o, now + 1);
 			},
 
 			swiggle: function () {
-				if(!c) return;
-				var now = c.currentTime;
-				var o = c.createOscillator();
-				var f = c.createBiquadFilter();
-				var g = audio.createGain();
-				o.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
+				if (!c) return;
+				var now = c.currentTime,
+					o = c.createOscillator();
 
-				g.gain.value = 0.10;
-				f.frequency.value = 3000;
-				f.Q.value = 10;
+				gainWithFilter(o, 0.10, 3000, 10)[0].connect(audio.master);
 
-				o.type = "square"
+				o.type = "square";
 				o.frequency.value = 0;
 				o.frequency.setValueAtTime(50, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.32);
@@ -284,24 +265,18 @@ var COLOR = {
 			},
 
 			die: function () {
-				if(!c) return;
+				if (!c) return;
 				var now = c.currentTime,
 					s = audio.noise,
-					f = c.createBiquadFilter(),
-					g = audio.createGain();
+					start = Math.random() * 20000 + 500 | 0,
+					gf;
 
-				envelope(g, now, 0.6, 0.5, 0.01, 0.01, 0.4, 0.08);
+				gf = gainWithFilter(s, 1, start, 10);
+				envelope(gf[0], now, 0.6, 0.5, 0.01, 0.01, 0.4, 0.08);
 
-				var start = Math.random() * 20000 + 500 | 0;
-				f.Q.value = 10;
-				f.frequency.value = start;
-				f.frequency.setValueAtTime(start, now);
-				f.frequency.linearRampToValueAtTime(200, now + 0.5);
-
-				s.connect(f);
-				f.connect(g);
-				g.connect(audio.master);
-
+				gf[1].frequency.setValueAtTime(start, now);
+				gf[1].frequency.linearRampToValueAtTime(200, now + 0.5);
+				gf[0].connect(audio.master);
 			}
 		},
 
@@ -313,13 +288,6 @@ var COLOR = {
 				c = new webkitAudioContext();
 			}
 
-			this.createGain = function () {
-				var node = null;
-				if (c.createGain) { node = c.createGain(); }
-				else if (c.createGainNode) { node = c.createGainNode(); }
-				else { this.ctx = c = null; }
-				return node
-			}
 			this.start = function (node, time) {
 				if (node.start) { node.start(time); }
 				else if (node.noteOn) { node.noteOn(time); }
@@ -331,7 +299,7 @@ var COLOR = {
 				else { this.ctx = c = null; }
 			}
 
-			if (c && (!this.createGain() || !c.createOscillator)) {
+			if (c && (!createGain() || !c.createOscillator)) {
 				c = null;
 			}
 
@@ -340,20 +308,15 @@ var COLOR = {
 				return;
 			}
 
-			this.noise = noise();
+			this.noise = createNoise();
 			this.start(this.noise, 0);
 
-			this.master = audio.createGain();
+			this.master = createGain();
 			this.master.gain.value = 1;
 			this.master.connect(c.destination);
-
-		},
-
-		stop: function () {
-			this.osc.stop(c.currentTime);
 		}
 
-};
+	};
 
 }());
 
@@ -577,7 +540,6 @@ var GEN = {
 		c.putImageData(pixels, 0, 0);
 
 		return c.canvas;
-
 	},
 
 	font: function () {
@@ -591,7 +553,7 @@ var GEN = {
 				return pix.data[(ro * pix.width + co) * 4 + i] +
 					pix.data[(ro * pix.width + co + 1) * 4 + i] +
 					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] +
-					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4
+					pix.data[((ro+1) * pix.width + co + 1) * 4 + i] / 4;
 			}
 
 		ctx.fillStyle = COLOR.font_main;
@@ -687,12 +649,10 @@ function makeSheet(img, w, h) {
 	var rooms;
 
 	window.Map = {
-
 		x: 0,
 		y: 0,
 
 		init: function (sheet, camera) {
-
 			this.sheet = sheet;
 			this.camera = camera;
 			this.walkable = BLOCKS.walkable;
@@ -711,20 +671,20 @@ function makeSheet(img, w, h) {
 			this.camera.setBounds(this.w, this.h);
 
 			return this;
-
 		},
 
 		generateRoomMap: function () {
-
 			var roomMap = [],
 				room,
-				normalRooms = 8;
+				normalRooms = 8,
+				numRows = 15,
+				numCols = 20;
 
-			for (var i = 0; i < 15; i++) {
+			for (var i = 0; i < numRows; i++) {
 				roomMap.push([]);
-				for (var j = 0; j < 20; j++) {
+				for (var j = 0; j < numCols; j++) {
 					room = Math.random() * normalRooms | 0;
-					if (i === 17 && room === 3) {
+					if (i === numRows - 1 && room === 3) {
 						// Don't put the water room on the bottom of the map
 						j--;
 						continue;
@@ -733,9 +693,11 @@ function makeSheet(img, w, h) {
 				}
 			}
 
+			// Draw top level "flat" area
 			for (i = 0; i < 8; i++) {
 				roomMap[0][i] = normalRooms + 1;
 			}
+			// With some ways down
 			roomMap[0][2] = normalRooms + 2;
 			roomMap[0][4] = 7;
 
@@ -743,7 +705,6 @@ function makeSheet(img, w, h) {
 		},
 
 		expandRoomMap: function (rooms, roomMap) {
-
 			var cells = [],
 				room,
 				roomsH = roomMap.length,
@@ -767,7 +728,6 @@ function makeSheet(img, w, h) {
 			}
 
 			return cells;
-
 		},
 
 		findFreeBlock: function () {
@@ -776,81 +736,55 @@ function makeSheet(img, w, h) {
 				cell = this.walkable + 1;
 
 			while (cell > this.walkable) {
-
 				x = Math.random() * this.cells[0].length | 0;
 				y = Math.random() * this.cells.length | 0;
 
 				cell = this.cells[y][x];
-
 			}
 
 			return [x, y];
 		},
 
 		addPickups: function () {
-
 			var pickup = [],
 				i,
 				pos;
 
 			for (i = 0; i < 60; i++) {
-
 				// Don't spawn at the top
 				pos = this.findFreeBlock();
 				while (pos[1] < 7) {
 					pos = this.findFreeBlock();
 				}
 
-				pickup.push([
-					pos[0],
-					pos[1]
-				]);
-
+				pickup.push([pos[0], pos[1]]);
 			}
 
 			// Add training piece
-			pickup.push([
-				49,
-				6
-			]);
+			pickup.push([49, 6]);
 
 			return pickup;
-
 		},
 
 		addPieces: function () {
-
 			var pieces = [],
 				pos;
 
 			for (var i = 0; i < 4; i++) {
-
 				// Don't spawn at the top
 				pos = this.findFreeBlock();
 				while (pos[1] < 7) {
 					pos = this.findFreeBlock();
 				}
 
-				pieces.push([
-					pos[0],
-					pos[1]
-				]);
-
+				pieces.push([pos[0], pos[1]]);
 			}
 
 			return pieces;
-
-		},
-
-		tick: function (player) {
-
-
 		},
 
 		getBlocks: function(blocks) {
-
 			return blocks.map(function (b) {
-
 				var row = b[1] / this.sheet.h | 0,
 					col = b[0] / this.sheet.w | 0;
 
@@ -859,21 +793,16 @@ function makeSheet(img, w, h) {
 				}
 
 				return this.cells[row][col];
-
 			}, this);
-
 		},
 
 		getBlockEdge: function(pos, vertical) {
-
 			var snapTo = vertical ? this.sheet.h : this.sheet.w;
 
 		    return utils.snap(pos, snapTo);
-
 		},
 
 		render: function (c) {
-
 			var tw = game.tw,
 				th = game.th,
 				cellW = this.sheet.cellW,
@@ -921,8 +850,7 @@ function makeSheet(img, w, h) {
 		},
 	};
 
-	rooms = [
-	[
+	rooms = [[
 		[ 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0],
 		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
 		[ 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -955,33 +883,30 @@ function makeSheet(img, w, h) {
 		[ 5, 1, 1, 5, 5, 7, 7, 2, 4, 4, 7],
 		[ 7, 7, 1, 7, 7, 7, 2, 2, 7, 7, 7]
 	], [
-		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-		[7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
-		[1, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
-		[1, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
-	],
-	[
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0,11, 5],
-		[0, 0, 0, 0, 0, 0, 0, 0,11, 7, 0],
-		[0, 0, 0, 0, 0, 0,11, 5, 7, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
-		[0, 0,11, 5,12, 0, 0, 0, 0, 0, 7],
-		[7, 7, 7, 7, 7, 0, 5, 5, 5, 1, 7]
-	],
-	[
-		[0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0],
-		[5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
-		[0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
-		[0, 0,11, 5, 0, 0, 0, 5, 7, 0, 0],
-		[0, 0, 0, 0, 5,12, 0, 0, 0, 0, 5],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-	],
-	[
+		[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 5,12, 0, 0, 0, 0, 0, 5],
+		[ 1, 0, 5, 7, 7, 0, 0, 0, 0, 0, 7],
+		[ 1, 5, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	], [
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0,11, 5],
+		[ 0, 0, 0, 0, 0, 0, 0, 0,11, 7, 0],
+		[ 0, 0, 0, 0, 0, 0,11, 5, 7, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
+		[ 0, 0,11, 5,12, 0, 0, 0, 0, 0, 7],
+		[ 7, 7, 7, 7, 7, 0, 5, 5, 5, 1, 7]
+	], [
+		[ 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0],
+		[ 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0],
+		[ 0, 0,11, 5, 0, 0, 0, 5, 7, 0, 0],
+		[ 0, 0, 0, 0, 5,12, 0, 0, 0, 0, 5],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	], [
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -989,300 +914,329 @@ function makeSheet(img, w, h) {
 		[ 0, 0, 0, 7, 7, 1, 7, 7,12, 0, 0],
 		[ 0, 0,11, 7, 7, 1, 7, 7, 7, 0, 0],
 		[ 5, 5, 7, 7, 7, 1, 7, 7, 7, 5, 5]
-	],
-	[
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0,11, 12, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 7, 7, 0, 0, 0, 0, 0,11,12, 0],
-		[0, 7, 7, 0, 0, 0, 0, 0, 7, 7,12],
-		[0, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7],
-		[5, 7, 7, 5, 5, 0, 5, 5, 7, 7, 7]
+	], [
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0,11,12, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 7, 7, 0, 0, 0, 0, 0,11,12, 0],
+		[ 0, 7, 7, 0, 0, 0, 0, 0, 7, 7,12],
+		[ 0, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7],
+		[ 5, 7, 7, 5, 5, 0, 5, 5, 7, 7, 7]
 	],
 
-
+	// Special rooms (not included in normal map gen)
 	[
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-	],
-	[
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0,11,12, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 7, 7,12],
-		[0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7],
-		[5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7]
-	]
-	];
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+	], [
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0,11,12, 0],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 7, 7,12],
+		[ 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7],
+		[ 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7]
+	]];
 
 
 }());
 
-var Entity = function () {
-	this.w = 10;
-	this.h = 10;
-	this.remove = false;
-	this.falling = false;
-	this.xo = 0;
-	this.yo = 0;
-};
-Entity.prototype = {
-	init: function (x, y) {
-		this.x = x;
-		this.y = y;
-		return this;
-	},
-	hit: function () {},
-	hitBlocks: function () {},
-	tick: function () { return !(this.remove); },
-	move: function (x, y, map) {
+(function () {
 
-		// Temp holder for movement
-		var xo,
-			yo,
+	"use strict";
 
-			xv,
-			yv,
-
-			hitX = false,
-			hitY = false,
-
-			xBlocks,
-			yBlocks;
-
-		xo = x;
-		yo = y;
-
-		xv = this.x + xo;
-		yv = this.y + yo;
-
-		// check blocks given vertical movement TL, BL, TR, BR
-		yBlocks = map.getBlocks([
-			[this.x, yv],
-			[this.x, yv + (this.h - 1)],
-			[this.x + (this.w - 1), yv],
-			[this.x + (this.w - 1), yv + (this.h - 1)]
-		]);
-
-		// if overlapping edges, move back a little
-		if (y < 0 && (yBlocks[0] > map.walkable || yBlocks[2] > map.walkable)) {
-			yo = map.getBlockEdge((yv | 0) + map.sheet.h, "VERT") - this.y;
-			hitY = true;
-		}
-		if (y > 0 && (yBlocks[1] > map.walkable || yBlocks[3] > map.walkable)) {
-			yo = map.getBlockEdge(yv + this.h, "VERT") - this.y - this.h;
-			hitY = true;
-		}
-
-		// Add the allowed Y movement
-		this.y += yo;
-
-		// Now check blocks given horizontal movement TL, BL, TR, BR
-		xBlocks = map.getBlocks([
-			[xv, this.y],
-			[xv, this.y + (this.h - 1)],
-			[xv + (this.w - 1), this.y],
-			[xv + (this.w - 1), this.y + (this.h - 1)]
-		]);
-
-		// if overlapping edges, move back a little
-		if (x < 0 && (xBlocks[0] > map.walkable || xBlocks[1] > map.walkable)) {
-			xo = map.getBlockEdge(xv + map.sheet.w) - this.x;
-			hitX = true;
-		}
-		if (x > 0 && (xBlocks[2] > map.walkable || xBlocks[3] > map.walkable)) {
-			xo = map.getBlockEdge(xv + this.w) - this.x - this.w;
-			hitX = true;
-		}
-
-		if (hitX || hitY) {
-			this.hitBlocks(hitX ? xBlocks : null, hitY ? yBlocks : null);
-		}
-
-		// Add the allowed X movement
-		this.x += xo;
-
-		// check if we're falling (with some pixels overhang)
-		yBlocks = map.getBlocks([
-			[this.x - (this.dir > 0 ? 6 : 0), this.y + this.h],
-			[this.x + (this.w - 1) + (this.dir < 0 ? 6 : 0), this.y + this.h]
-		]);
-
-		this.wasFalling = this.falling;
-		if (yBlocks[0] <= map.walkable && yBlocks[1] <= map.walkable) {
-			if (!this.onLadder) this.falling = true;
-			else this.falling = false;
-		} else {
-			this.falling = false;
-		}
-
-		// Reset offset amount
+	var Entity = function () {
+		this.w = 10;
+		this.h = 10;
+		this.remove = false;
+		this.falling = false;
 		this.xo = 0;
 		this.yo = 0;
+	};
 
-		return [xo, yo];
+	Entity.prototype = {
+		init: function (x, y) {
+			this.x = x;
+			this.y = y;
+			return this;
+		},
+		hit: function () {},
+		hitBlocks: function () {},
+		tick: function () { return !(this.remove); },
+		move: function (x, y, map) {
 
+			// Temp holder for movement
+			var xo,
+				yo,
+
+				xv,
+				yv,
+
+				hitX = false,
+				hitY = false,
+
+				xBlocks,
+				yBlocks;
+
+			xo = x;
+			yo = y;
+
+			xv = this.x + xo;
+			yv = this.y + yo;
+
+			// check blocks given vertical movement TL, BL, TR, BR
+			yBlocks = map.getBlocks([
+				[this.x, yv],
+				[this.x, yv + (this.h - 1)],
+				[this.x + (this.w - 1), yv],
+				[this.x + (this.w - 1), yv + (this.h - 1)]
+			]);
+
+			// if overlapping edges, move back a little
+			if (y < 0 && (yBlocks[0] > map.walkable || yBlocks[2] > map.walkable)) {
+				yo = map.getBlockEdge((yv | 0) + map.sheet.h, "VERT") - this.y;
+				hitY = true;
+			}
+			if (y > 0 && (yBlocks[1] > map.walkable || yBlocks[3] > map.walkable)) {
+				yo = map.getBlockEdge(yv + this.h, "VERT") - this.y - this.h;
+				hitY = true;
+			}
+
+			// Add the allowed Y movement
+			this.y += yo;
+
+			// Now check blocks given horizontal movement TL, BL, TR, BR
+			xBlocks = map.getBlocks([
+				[xv, this.y],
+				[xv, this.y + (this.h - 1)],
+				[xv + (this.w - 1), this.y],
+				[xv + (this.w - 1), this.y + (this.h - 1)]
+			]);
+
+			// if overlapping edges, move back a little
+			if (x < 0 && (xBlocks[0] > map.walkable || xBlocks[1] > map.walkable)) {
+				xo = map.getBlockEdge(xv + map.sheet.w) - this.x;
+				hitX = true;
+			}
+			if (x > 0 && (xBlocks[2] > map.walkable || xBlocks[3] > map.walkable)) {
+				xo = map.getBlockEdge(xv + this.w) - this.x - this.w;
+				hitX = true;
+			}
+
+			if (hitX || hitY) {
+				this.hitBlocks(hitX ? xBlocks : null, hitY ? yBlocks : null);
+			}
+
+			// Add the allowed X movement
+			this.x += xo;
+
+			// check if we're falling (with some pixels overhang)
+			yBlocks = map.getBlocks([
+				[this.x - (this.dir > 0 ? 6 : 0), this.y + this.h],
+				[this.x + (this.w - 1) + (this.dir < 0 ? 6 : 0), this.y + this.h]
+			]);
+
+			this.wasFalling = this.falling;
+			if (yBlocks[0] <= map.walkable && yBlocks[1] <= map.walkable) {
+				if (!this.onLadder) this.falling = true;
+				else this.falling = false;
+			} else {
+				this.falling = false;
+			}
+
+			// Reset offset amount
+			this.xo = 0;
+			this.yo = 0;
+
+			return [xo, yo];
+
+		},
+
+		render: function(c) {
+			c.fillStyle = "red";
+			c.fillRect(this.x, this.y, this.w, this.h);
+		}
+	};
+
+	window.Entity = Entity;
+
+}());
+(function () {
+
+	"use strict";
+
+	var Ghoul = function () {
+		this.w = 15;
+		this.h = 22;
+		this.dir = 1;
+		this.speed = 1.1;
+		this.angrySpeed = 1.5;
+		this.life = 3;
+		this.knockBack = 0;
+		this.xpValue = 15;
+		this.xpAttackValue = -8;
+
+		this.isAngry = false;
+		this.foreverAngry = false;
+
+		this.visible = false;
+		this.notVisibleFor = 0;
+	};
+
+	Ghoul.prototype = new Entity;
+
+	Ghoul.prototype.init = function (x, y, dir, level) {
+		this.x = x;
+		this.y = y;
+
+		this.level = level;
+
+		this.speed = Math.random() + 0.6;
+		this.angrySpeed = Math.random() * 0.5 + 1.2;
+
+		this.dir = dir || 1;
+
+		this.offs = {
+			headX: 1,
+			headY: -2,
+			bodyX: 0,
+			bodyY: 6
+		}
+
+		return this;
 	},
-	render: function(c) {
-		c.fillStyle = "red";
-		c.fillRect(this.x, this.y, this.w, this.h);
-	}
-};
-var Ghoul = function () {
-	this.w = 15;
-	this.h = 22;
-	this.dir = 1;
-	this.speed = 1.1;
-	this.angrySpeed = 1.5;
-	this.life = 3;
-	this.knockBack = 0;
-	this.xpValue = 15;
-	this.xpAttackValue = -8;
 
-	this.isAngry = false;
-	this.foreverAngry = false;
-
-	this.visible = false;
-	this.notVisibleFor = 0;
-};
-Ghoul.prototype = new Entity;
-Ghoul.prototype.init = function (x, y, dir, level) {
-	this.x = x;
-	this.y = y;
-
-	this.level = level;
-
-	this.speed = Math.random() + 0.6;
-	this.angrySpeed = Math.random() * 0.5 + 1.2;
-
-	this.dir = dir || 1;
-
-	this.offs = {
-		headX: 1,
-		headY: -2,
-		bodyX: 0,
-		bodyY: 6
-	}
-
-	return this;
-},
-Ghoul.prototype.hit = function (e) {
-	if (e instanceof Spear && !e.stuck) {
-		this.knockBack = e.dir === this.dir ? 3 * e.dir : -7 * this.dir;
-		if(this.life-- <= 0) {
-			this.level.xp(this);
+	Ghoul.prototype.hit = function (e) {
+		if (e instanceof Spear && !e.stuck) {
+			this.knockBack = e.dir === this.dir ? 3 * e.dir : -7 * this.dir;
+			if(this.life-- <= 0) {
+				this.level.xp(this);
+				this.remove = true;
+				this.level.explode(this.x + this.w / 2, this.y + this.h);
+			}
+		}
+		if (e instanceof Trap || e instanceof Player) {
 			this.remove = true;
 			this.level.explode(this.x + this.w / 2, this.y + this.h);
 		}
-	}
-	if (e instanceof Trap || e instanceof Player) {
-		this.remove = true;
-		this.level.explode(this.x + this.w / 2, this.y + this.h);
-	}
-};
-Ghoul.prototype.tick = function (map) {
-	var yo = 0,
-		xo = 0,
-		player;
+	};
 
-	if (!this.visible) {
-		if (this.notVisibleFor ++ > 2000) {
-			return false;
+	Ghoul.prototype.tick = function (map) {
+		var yo = 0,
+			xo = 0,
+			player;
+
+		if (!this.visible) {
+			if (this.notVisibleFor ++ > 2000) {
+				return false;
+			}
+		} else {
+			this.notVisibleFor = 0;
 		}
-	} else {
-		this.notVisibleFor = 0;
-	}
 
-	if (!this.isAngry) {
-		yo = Math.sin(Date.now() / 100	);
-		xo = this.speed * this.dir;
-	} else {
-		player = this.level.player;
-		var dist = utils.dist([this.x, this.y], [player.x, player.y]);
-		if (this.foreverAngry || dist < 350) {
-			if (Math.abs(this.y - player.y) > 2) {
-				yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
-			} else if (Math.abs(this.x - player.x) > 5) {
-				this.dir = this.x < player.x ? 1 : -1;
-				xo = this.angrySpeed * this.dir;
+		if (!this.isAngry) {
+			yo = Math.sin(Date.now() / 100	);
+			xo = this.speed * this.dir;
+		} else {
+			player = this.level.player;
+			var dist = utils.dist([this.x, this.y], [player.x, player.y]);
+			if (this.foreverAngry || dist < 350) {
+				if (Math.abs(this.y - player.y) > 2) {
+					yo = this.angrySpeed * (this.y < player.y ? 1 : -1);
+				} else if (Math.abs(this.x - player.x) > 5) {
+					this.dir = this.x < player.x ? 1 : -1;
+					xo = this.angrySpeed * this.dir;
+				}
+			}
+			yo += Math.sin(Date.now() / 100) / 2;
+
+		}
+
+		if (this.knockBack !== 0) {
+			xo += this.knockBack;
+			this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
+		}
+
+
+		if (!this.isAngry) {
+			// Don't move if not visible - save coll detection on map
+			if (this.visible) {
+				this.move(xo, yo, map);
+			}
+		} else {
+			this.x += xo;
+			this.y += yo;
+			if (this.visible) {
+				this.foreverAngry = true;
 			}
 		}
-		yo += Math.sin(Date.now() / 100) / 2;
 
-	}
-
-	if (this.knockBack !== 0) {
-		xo += this.knockBack;
-		this.knockBack = this.knockBack + (this.knockBack > 0 ? -1 : 1);
-	}
-
-
-	if (!this.isAngry) {
-		// Don't move if not visible - save coll detection on map
-		if (this.visible) {
-			this.move(xo, yo, map);
+		if (this.x < 0) {
+			this.x = 0;
+			this.dir = 1;
 		}
-	} else {
-		this.x += xo;
-		this.y += yo;
-		if (this.visible) {
-			this.foreverAngry = true;
-		}
-	}
 
-	return !(this.remove);
-};
-Ghoul.prototype.hitBlocks = function (x, y) {
-	this.dir *= -1;
-};
-Ghoul.prototype.render = function (c) {
+		return !(this.remove);
+	};
 
-	c.strokeStyle = "#000";
-	c.lineWidth = 2;
+	Ghoul.prototype.hitBlocks = function (x, y) {
+		this.dir *= -1;
+	};
 
-	c.shadowColor =  "hsl(70, 100%, 50%)";
-    c.shadowOffsetX = 0;
-    c.shadowOffsetY = 0;
-    c.shadowBlur    = 10;
+	Ghoul.prototype.render = function (c) {
+		c.strokeStyle = "#000";
+		c.lineWidth = 2;
 
-	var o = Math.sin(Date.now() / 300) * 2;
-	c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
-	c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
-	c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
+		c.shadowColor =  "hsl(70, 100%, 50%)";
+	    c.shadowOffsetX = 0;
+	    c.shadowOffsetY = 0;
+	    c.shadowBlur    = 10;
+
+		var o = Math.sin(Date.now() / 300) * 2;
+		c.fillStyle = this.isAngry ? "hsl(10, 80%, 60%)" : "hsl(180, 80%, 50%)";
+		c.fillRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
+		c.strokeRect(this.x + this.offs.bodyX, this.y + this.offs.bodyY + (o/2), 12, 15);
 
 
-	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
-	c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
-	c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
+		c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
+		c.fillRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
+		c.strokeRect(this.x + this.offs.headX * this.dir + 3, this.y + this.offs.headY + o, 6, 10);
 
-	c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
-	c.fillRect(this.x + 2, this.y +20, 8, 3);
-	c.strokeRect(this.x + 2, this.y +20, 8, 3);
-	c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
+		c.fillStyle = this.isAngry ? "hsl(0, 80%, 60%)" : "hsl(120, 30%, 40%)";
+		c.fillRect(this.x + 2, this.y +20, 8, 3);
+		c.strokeRect(this.x + 2, this.y +20, 8, 3);
+		c.fillRect(this.x + (this.dir < 0 ? 6 : 4), this.y + 11, 8 * this.dir, 3);
+	};
 
+	window.Ghoul = Ghoul;
 
-};var Pickup = function (){
+}());
+var Pickup = function (){
 	this.w = 20;
 	this.h = 24;
 	this.xpValue = 11;
 };
+
 Pickup.prototype = new Entity;
+
 Pickup.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
 	return this;
 }
+
 Pickup.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Pickup.prototype.hit = function (e) {};
+
 Pickup.prototype.render = function (c) {
 	c.strokeStyle = "#000";
 	c.fillStyle = "#a00";
@@ -1299,7 +1253,9 @@ var Piece = function (){
 	this.h = 24;
 	this.xpValue = 32;
 };
+
 Piece.prototype = new Entity;
+
 Piece.prototype.init = function (x, y, id) {
 	this.x = x;
 	this.y = y;
@@ -1307,10 +1263,13 @@ Piece.prototype.init = function (x, y, id) {
 
 	return this;
 }
+
 Piece.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Piece.prototype.hit = function (e) {};
+
 Piece.prototype.render = function (c) {
 	c.shadowColor =  "hsl(70, 100%, 50%)";
     c.shadowOffsetX = 0;
@@ -1356,7 +1315,9 @@ var Player = function() {
 	this.count = 0;
 
 };
+
 Player.prototype = new Entity;
+
 Player.prototype.init = function (x, y, level) {
 
 	this.x = x;
@@ -1378,11 +1339,13 @@ Player.prototype.init = function (x, y, level) {
 	}
 
 	return this;
-},
+};
+
 Player.prototype.complete = function () {
 	var p = this.pieces;
 	return p[0] + p[1] + p[2] + p[3];
 };
+
 Player.prototype.tick = function (input, map) {
 
 	this.count++;
@@ -1474,11 +1437,13 @@ Player.prototype.tick = function (input, map) {
 	}
 
 };
+
 Player.prototype.jump = function () {
 	this.acc[1] = this.jumpHeight;
 	this.vel[1] = 0;
 	this.falling = true;
 };
+
 Player.prototype.tickDead = function () {
 	var dx = this.x - this.checkpoint[0],
 		dy = this.y - this.checkpoint[1],
@@ -1515,14 +1480,14 @@ Player.prototype.hit = function (e) {
 	if (e instanceof Pickup) {
 		e.remove = true;
 		this.level.xp(e);
-		// Befor you needed multipe pickups to make a trap. remove this.
-		audio.sfx.pickup();
 		this.numTraps++;
+		audio.sfx.pickup();
 		if(this.numPickups++ === 0 || (this.everLaidTrap === false && this.count > 6000)) {
 			this.level.firstPickup();
 		};
 		return;
 	}
+
 	if (e instanceof Ghoul) {
 		this.killed(e);
 		return;
@@ -1550,6 +1515,7 @@ Player.prototype.hit = function (e) {
 		return;
 	}
 };
+
 Player.prototype.hitSpear = function (spear) {
 	if (spear.stuck) {
 		this.onLadder = true;
@@ -1575,13 +1541,14 @@ Player.prototype.killed = function (e) {
 	this.level.explode(this.x + this.w / 2, this.y + this.h);
 	this.deaded = true;
 };
-Player.prototype.hitBlocks = function (x, y) {
 
-	if ((x && x.indexOf(BLOCKS.type.LAVA) > -1) || (y && y.indexOf(BLOCKS.type.LAVA) > -1)) {
+Player.prototype.hitBlocks = function (x, y) {
+	var all = (x || []).concat(y || []);
+	if (all.indexOf(BLOCKS.type.LAVA) > -1) {
 		this.killed();
 	}
-
 };
+
 Player.prototype.checkBlocks = function (input, map) {
 
 	this.wasOnLadder = this.onLadder;
@@ -1627,12 +1594,17 @@ Player.prototype.checkBlocks = function (input, map) {
 	}
 
 };
+
 Player.prototype.render = function (c) {
 
 	c.shadowBlur = 0;
 
 	// draw checkpoint
-	var grd = c.createLinearGradient(this.checkpoint[0] + game.tw / 2, this.checkpoint[1], this.checkpoint[0] + game.tw / 2, this.checkpoint[1] + game.th);
+	var grd = c.createLinearGradient(
+		this.checkpoint[0] + game.tw / 2, this.checkpoint[1],
+		this.checkpoint[0] + game.tw / 2, this.checkpoint[1] + game.th
+	);
+
 	grd.addColorStop(0, "hsla(0, 0%, 0%, 0)");
 	grd.addColorStop(Math.random() * 0.3, "hsla(0, 0%, 0%, 0)");
 	grd.addColorStop(1, "hsla(" + (Math.random() * 130 + 40 | 0) +", 100%, 50%, 1)");
@@ -1794,15 +1766,18 @@ var Trap = function (){
 	this.activated = false;
 };
 Trap.prototype = new Entity;
+
 Trap.prototype.init = function (x, y) {
 	this.x = x;
 	this.y = y;
 
 	return this;
 }
+
 Trap.prototype.tick = function (map) {
 	return !(this.remove);
 };
+
 Trap.prototype.hit = function (e) {
 	if (e instanceof Ghoul) {
 		this.activated = true;
@@ -1811,6 +1786,7 @@ Trap.prototype.hit = function (e) {
 		}
 	}
 };
+
 Trap.prototype.setClosestPiece = function (pieces) {
 	var self = this;
 	this.closest = pieces.reduce(function (acc, p) {
@@ -1826,9 +1802,11 @@ Trap.prototype.setClosestPiece = function (pieces) {
 		return acc;
 	}, [null, -1, -1]);
 };
+
 Trap.prototype.render = function (c) {
 
 	if (this.activated && this.closest[0]) {
+		// Draw the arrow
 		c.save();
 		c.translate(this.x + this.w / 2, this.y + this.h / 2);
 		c.rotate(this.closest[2] + Math.PI * 1.5);
@@ -1863,10 +1841,10 @@ var Camera = {
 	x: 0,
 	y: 0,
 	xRange: 80,
-	yRange: 100,
+	yRange: 60,
 	zoom: 1,
-	init: function (entity, x, y, w, h) {
 
+	init: function (entity, x, y, w, h) {
 		this.entity = entity;
 		this.w = w;
 		this.h = h;
@@ -1876,11 +1854,12 @@ var Camera = {
 		this.track(entity);
 
 		return this;
-
 	},
+
 	setBounds: function (w, h) {
 		this.bounds = [w, h];
 	},
+
 	track: function (entity) {
 
 		var e = entity || this.entity;
@@ -2141,8 +2120,8 @@ Screen.level = {
 		this.pieces = this.map.pieces.map(function (p, i) {
 			return new Piece().init(p[0] * game.tw, p[1] * game.th, i)
 		});
-		this.ghouls = [];
 
+		this.ghouls = [];
 		this.particles = [];
 
 		for (var i = 0; i < 5; i++) {
@@ -2155,6 +2134,7 @@ Screen.level = {
 	},
 
 	tick: function (input) {
+
 		this.camera.tick();
 		this.player.tick(input, this.map);
 		this.ghouls = this.ghouls.filter(function (g) {
@@ -2170,15 +2150,34 @@ Screen.level = {
 			return p.tick();
 		});
 
-		// Generate a ghoul
-		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+		this.generateEntities();
+
+		utils.checkCollisions([this.ghouls, this.player.projectiles]);
+		utils.checkCollisions([this.ghouls, this.player.traps]);
+
+		if (!this.player.deaded) {
+			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
+			utils.checkCollision(this.player, this.pieces);
+			utils.checkCollision(this.player, this.pickups);
+			utils.checkCollision(this.player, this.ghouls);
+		}
+	},
+
+	generateEntities: function () {
+
 			var empty = false,
 				x,
 				y;
+
+		// Generate a ghoul
+		if (Math.random() < 0.01 && this.ghouls.length < 35) {
+
+			// Find clear spot to spawn
 			while (!empty) {
 				x = Math.random() * (this.map.cellW - 4) | 0;
 				y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
 
+				// spawn somewhere near the player-ish (based on game completeness)
 				var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);
 
 				if (dist < (5 - this.player.complete()) * 600) {
@@ -2196,35 +2195,26 @@ Screen.level = {
 			this.ghouls.push(
 				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
-			// Random based on completeness that ghost is angry
+
+			// Angry ghouls chase the player.
+			// More likely to be angry if game more complete
 			if (Math.random() < 0.4 * ((this.player.complete() + 1) / 4)) {
 				this.ghouls[this.ghouls.length - 1].isAngry = true;
 			}
 		}
 
-		utils.checkCollisions([this.ghouls, this.player.projectiles]);
-		utils.checkCollisions([this.ghouls, this.player.traps]);
-
-		if (!this.player.deaded) {
-			utils.checkCollision(this.player, this.player.projectiles, "hitSpear");
-			utils.checkCollision(this.player, this.pieces);
-			utils.checkCollision(this.player, this.pickups);
-			utils.checkCollision(this.player, this.ghouls);
-		}
 	},
 
-
 	xp: function (e) {
-
 		this.player.xp += e.xpValue;
-
 	},
 
 	explode: function (x, y) {
-
-		var played = false;
-		for (var i = 0; i < this.particles.length; i++) {
-			var p = this.particles[i];
+		var played = false,
+			i,
+			p;
+		for (i = 0; i < this.particles.length; i++) {
+			p = this.particles[i];
 			if (!p.running) {
 				p.play(x, y);
 				played = true;
@@ -2237,40 +2227,31 @@ Screen.level = {
 		}
 
 		audio.sfx.die();
-
 	},
 
 	firstPickup: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
-			game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
-			game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
-			game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
-			game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
+		game.res.font(c, "HOLD DOWN AND FIRE TO ACTIVATE A", 40, 60);
+		game.res.font(c, "GLOWBOUG TRAP.", 40, 100);
+		game.res.font(c, "IT HAS A SHORT RANGE, SO BE CLOSE!", 40, 170);
+		game.res.font(c, "TRY TO CATCH THEM FROM BELOW.", 40, 210);
+		game.res.font(c, "GLOWBOUGS WILL LEAD YOU TO THE GRAIL.", 40, 250);
 		});
 	},
 
 	firstPiece: function () {
 		game.dialog = new Dialog().init(function (c) {
-			game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
-			game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
-			game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
+		game.res.font(c, "YOU HAVE FOUND A PIECE OF THE GRAIL.", 40, 60);
+		game.res.font(c, "FIND THE REMAINING THREE PIECES TO", 40, 120);
+		game.res.font(c, "COMPLETE YOUR QUEST.", 40, 150);
 
-			game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
+		game.res.font(c, "YOU WILL NOW RETURN HERE, IF YOU DIE.", 40, 220);
 		});
 	},
 
 	winsTheGame: function () {
 
 		game.setScreen(Screen.win, this.player.xp);
-
-		// game.dialog = new Dialog().init(function (c) {
-		// 	game.res.font(c, "YOU HAVE DISCOVERED THE LAST PIECE.", 40, 60);
-		// 	game.res.font(c, "IT'S BEAUUTIFUL.", 40, 120);
-		// 	game.res.font(c, "YOUR QUEST IS COMPLETE.", 40, 150);
-		// }, function () {
-		// 	game.reset();
-		// });
 	},
 
 	render: function (c) {
