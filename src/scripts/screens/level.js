@@ -69,7 +69,7 @@ Screen.level = {
 			this.ghouls.push(
 				new Ghoul().init((x + 1) * game.tw, y * game.th, Math.random() < 0.5 ? 1 : -1, this)
 			)
-			// Random based on completeness that ghost is angry
+			// More likely to be angry if game more complete
 			if (Math.random() < 0.4 * ((this.player.complete() + 1) / 4)) {
 				this.ghouls[this.ghouls.length - 1].isAngry = true;
 			}

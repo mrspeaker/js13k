@@ -100,6 +100,11 @@ Ghoul.prototype.tick = function (map) {
 		}
 	}
 
+	if (this.x < 0) {
+		this.x = 0;
+		this.dir = 1;
+	}
+
 	return !(this.remove);
 };
 Ghoul.prototype.hitBlocks = function (x, y) {
