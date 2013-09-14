@@ -420,6 +420,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		this.xSpeed = Math.random() * 2 - 1;
 		this.ySpeed = Math.random() * 2 - 1 - 1;
 	}
+
 	Part.prototype = {
 
 		reset: function () {
@@ -1945,8 +1946,8 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			this.constrainToBounds();
 
 		},
-		constrainToBounds: function () {
 
+		constrainToBounds: function () {
 			if (this.x < 0) {
 				this.x = 0;
 			}
@@ -1967,7 +1968,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		tick: function () {
-
 			var e = this.entity,
 				center = {x: this.x + this.w / 2, y: this.y + this.h / 2},
 				xr = this.xRange,
@@ -2092,7 +2092,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		tick: function (input) {
-
 			this.count++;
 
 			if ((this.count - 1) % 100 === 0) {
@@ -2114,7 +2113,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		render: function (c) {
-
 			c.fillStyle = "hsla(211, 20%, 37%, 0.15)";
 			c.fillRect(0, 0, c.w, c.h);
 			c.fillStyle = "hsla(65, 40%, 70%, 0.2)";
@@ -2139,7 +2137,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			game.res.font(c, "BY", 5, 84);
 			game.res.font(c, "MR SPEAKER", 5, 115);
 
-
 			c.restore();
 		}
 
@@ -2162,7 +2159,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		tick: function (input) {
-
 			this.count++;
 
 			if (this.count > 50 && input.pressed("fire")) {
@@ -2172,7 +2168,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		render: function (c) {
-
 			c.fillStyle = "hsl(" + ((this.count + 80) / 3 % 360 | 0) + ", 60%, 40%)";
 			c.fillRect(0, 0, c.w, c.h);
 
@@ -2376,7 +2371,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 	"use strict";
 
-
 	var Input = {
 
 		keys: {
@@ -2398,7 +2392,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		init: function () {
-
 			var self = this;
 
 			function keyed(code, isDown) {
@@ -2421,7 +2414,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		reset: function () {
-
 			for (var k in this.keys) {
 				this.keys[k].isDown = false;
 				this.keys[k].wasDown = false;
@@ -2430,7 +2422,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		tick: function () {
-
 			var key;
 
 			for(key in this.keys) {
@@ -2442,9 +2433,11 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		isDown: function (action) {
 			return this.keys[this.actions[action]].isDown;
 		},
+
 		wasDown: function (action) {
 			return this.keys[this.actions[action]].wasDown;
 		},
+
 		pressed: function (action) {
 			return this.isDown(action) && !(this.wasDown(action));
 		}

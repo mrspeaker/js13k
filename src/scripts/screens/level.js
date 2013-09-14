@@ -2,12 +2,14 @@
 
 	Screen.level = {
 
+		numPieces: 4,
+
 		init: function () {
 			var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
 			this.player = new Player().init(game.tw * 2, game.th * 5, this);
 			this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
-			this.map = Map.init(tiles, this.camera);
+			this.map = Map.init(tiles, this.camera, this);
 
 			this.pickups = this.map.pickups.map(function (p) {
 				return new Pickup().init(p[0] * game.tw, p[1] * game.th)

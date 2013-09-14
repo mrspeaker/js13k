@@ -14,7 +14,6 @@
 		},
 
 		tick: function (input) {
-
 			this.count++;
 
 			if (this.count > 50 && input.pressed("fire")) {
@@ -24,7 +23,6 @@
 		},
 
 		render: function (c) {
-
 			c.fillStyle = "hsl(" + ((this.count + 80) / 3 % 360 | 0) + ", 60%, 40%)";
 			c.fillRect(0, 0, c.w, c.h);
 

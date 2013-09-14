@@ -2,7 +2,6 @@
 
 	"use strict";
 
-
 	var Input = {
 
 		keys: {
@@ -24,7 +23,6 @@
 		},
 
 		init: function () {
-
 			var self = this;
 
 			function keyed(code, isDown) {
@@ -47,7 +45,6 @@
 		},
 
 		reset: function () {
-
 			for (var k in this.keys) {
 				this.keys[k].isDown = false;
 				this.keys[k].wasDown = false;
@@ -56,7 +53,6 @@
 		},
 
 		tick: function () {
-
 			var key;
 
 			for(key in this.keys) {
@@ -68,9 +64,11 @@
 		isDown: function (action) {
 			return this.keys[this.actions[action]].isDown;
 		},
+
 		wasDown: function (action) {
 			return this.keys[this.actions[action]].wasDown;
 		},
+
 		pressed: function (action) {
 			return this.isDown(action) && !(this.wasDown(action));
 		}

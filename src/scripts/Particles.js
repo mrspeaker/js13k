@@ -83,6 +83,7 @@
 		this.xSpeed = Math.random() * 2 - 1;
 		this.ySpeed = Math.random() * 2 - 1 - 1;
 	}
+
 	Part.prototype = {
 
 		reset: function () {

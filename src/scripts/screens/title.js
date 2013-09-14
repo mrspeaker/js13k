@@ -3,7 +3,7 @@
 	Screen.title = {
 
 		count: 0,
-		stars: [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8],
+		stars: new Array(18).join(",").split(","),
 
 		init: function () {
 			this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
@@ -11,7 +11,6 @@
 		},
 
 		tick: function (input) {
-
 			this.count++;
 
 			if ((this.count - 1) % 100 === 0) {
@@ -33,7 +32,6 @@
 		},
 
 		render: function (c) {
-
 			c.fillStyle = "hsla(211, 20%, 37%, 0.15)";
 			c.fillRect(0, 0, c.w, c.h);
 			c.fillStyle = "hsla(65, 40%, 70%, 0.2)";
@@ -54,10 +52,16 @@
 				}
 			}
 
-			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
 			game.res.font(c, "BY", 5, 84);
 			game.res.font(c, "MR SPEAKER", 5, 115);
 
+			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
+			//c.save();
+			var comp = c.globalCompositeOperation;
+			c.globalCompositeOperation = "destination-out";
+			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
+			//c.restore();
+			c.globalCompositeOperation = comp;
 
 			c.restore();
 		}

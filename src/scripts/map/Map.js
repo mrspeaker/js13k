@@ -120,19 +120,58 @@
 			return pickup;
 		},
 
-		addPieces: function () {
+		addPieces: function (resets) {
 			var pieces = [],
-				pos;
+				pos,
+				minDistance = 85,
+				maxRetries = 100;
+
+			// Make all the peices far apart from each other...
+			// check distance from all other pieces
+			// if it's colser than X do it again.
+			// if it's been bunch of time and no cigar, retry the whole process.
+			// if too many retries, just give up.
+
+			resets = resets || 0;
 
 			for (var i = 0; i < 4; i++) {
-				// Don't spawn at the top
-				pos = this.findFreeBlock();
-				while (pos[1] < 7) {
+
+				var foundSpot = false,
+					tries = 0;
+
+				while (!foundSpot && tries < 10) {
+
+					// Don't spawn at the top
 					pos = this.findFreeBlock();
+					while (pos[1] < 7) {
+						pos = this.findFreeBlock();
+					}
+
+					var closest = pieces.reduce(function (closest, thisOne) {
+						var dist = utils.dist([pos[0], pos[1]], [thisOne[0], thisOne[1]]);
+						return Math.min(dist, closest);
+					}, window.Infinity);
+
+					if (closest > minDistance) {
+						foundSpot = true;
+					} else {
+						tries++;
+					}
+
 				}
 
+				if (!foundSpot) {
+					if(resets++ > maxRetries) {
+						break;
+					} else {
+						return this.addPieces(resets);
+					}
+				}
+
+				// Check if we are
 				pieces.push([pos[0], pos[1]]);
 			}
+			console.log("resest", resets)
 
 			return pieces;
 		},

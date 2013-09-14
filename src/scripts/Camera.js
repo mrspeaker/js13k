@@ -26,7 +26,6 @@
 		},
 
 		track: function (entity) {
-
 			var e = entity || this.entity;
 			this.x = e.x - (this.w / 2) + (e.w / 2);
 			this.y = e.y - (this.h / 2);
@@ -34,8 +33,8 @@
 			this.constrainToBounds();
 
 		},
-		constrainToBounds: function () {
 
+		constrainToBounds: function () {
 			if (this.x < 0) {
 				this.x = 0;
 			}
@@ -56,7 +55,6 @@
 		},
 
 		tick: function () {
-
 			var e = this.entity,
 				center = {x: this.x + this.w / 2, y: this.y + this.h / 2},
 				xr = this.xRange,
