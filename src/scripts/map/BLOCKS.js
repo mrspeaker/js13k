@@ -1,16 +1,21 @@
-var BLOCKS = {
+(function () {
 
-	walkable: 4,
+	"use strict";
 
-	type: {
-		LADDER: 1,
-		WATER: 2,
-		WATERRIGHT: 3,
-		WATERLEFT: 4,
-		LAVA: 8
-	}
+	var BLOCKS = {
 
-};
+		walkable: 4,
 
-window.BLOCKS = BLOCKS;
+		type: {
+			LADDER: 1,
+			WATER: 2,
+			WATERRIGHT: 3,
+			WATERLEFT: 4,
+			LAVA: 8
+		}
 
+	};
+
+	window.BLOCKS = BLOCKS;
+
+}());

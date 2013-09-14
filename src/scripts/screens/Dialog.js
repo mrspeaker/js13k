@@ -1,28 +1,37 @@
-var Dialog = function () {
-	this.count = 0;
-};
-Dialog.prototype = {
+(function () {
 
-	init: function (renderfunc, donefunc) {
-		this.renderfunc = renderfunc;
-		this.donefunc = donefunc;
-		return this;
-	},
+	"use strict";
 
-	tick: function () {
-		this.count ++;
+	var Dialog = function () {
+		this.count = 0;
+	};
 
-		if (this.count > 70 && Input.isDown("fire")) {
-			this.donefunc && this.donefunc.call(this);
-			return false;
+	Dialog.prototype = {
+
+		init: function (renderfunc, donefunc) {
+			this.renderfunc = renderfunc;
+			this.donefunc = donefunc;
+			return this;
+		},
+
+		tick: function () {
+			this.count ++;
+
+			if (this.count > 70 && Input.isDown("fire")) {
+				this.donefunc && this.donefunc.call(this);
+				return false;
+			}
+			return true;
+		},
+
+		render: function (c) {
+			c.fillStyle = "rgba(0, 0, 0, 0.85)";
+			c.fillRect(0, 0, game.ctx.w, game.ctx.h);
+
+			this.renderfunc.call(this, c);
 		}
-		return true;
-	},
+	};
 
-	render: function (c) {
-		c.fillStyle = "rgba(0, 0, 0, 0.85)";
-		c.fillRect(0, 0, game.ctx.w, game.ctx.h);
+	window.Dialog = Dialog;
 
-		this.renderfunc.call(this, c);
-	}
-};
+}());

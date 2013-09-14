@@ -1,69 +1,77 @@
-var game = {
+(function () {
 
-	tw: 20,
-	th: 24,
+	"use strict";
 
-	dialog: null,
-	screen: null,
-	screenPrev: null,
-	screenFade: 0,
+	var game = {
 
-	init: function () {
-		this.ctx = this.addMainCanvas();
+		tw: 20,
+		th: 24,
 
-		this.res = {
-			"tiles": GEN.tiles(this.tw, this.th),
-			"font": GEN.font()
-		}
+		dialog: null,
+		screen: null,
+		screenPrev: null,
+		screenFade: 0,
 
-		this.input = Input.init();
-		audio.init();
-		this.reset();
-		this.run();
+		init: function () {
+			this.ctx = this.addMainCanvas();
 
-	},
-
-	setScreen: function (screen, arg) {
-		this.screenPrev = this.screen;
-		this.screen = screen.init(arg);
-		this.screenFade = 75;
-	},
-
-	addMainCanvas: function () {
-		var ctx = utils.createCanvas(720, 405, "board");
-		ctx.canvas.backgroundColor = COLOR.back_main;
-
-		document.querySelector("#b").appendChild(ctx.canvas);
-		return ctx;
-	},
-
-	reset: function () {
-		this.input.reset();
-		this.setScreen(Screen.title);
-	},
-
-	run: function (d) {
-
-		if (!this.dialog) {
-			this.screen.tick(this.input);
-		} else {
-			if (!this.dialog.tick(this.input)) {
-				this.dialog = null;
+			this.res = {
+				"tiles": GEN.tiles(this.tw, this.th),
+				"font": GEN.font()
 			}
+
+			this.input = Input.init();
+			audio.init();
+			this.reset();
+			this.run();
+
+		},
+
+		setScreen: function (screen, arg) {
+			this.screenPrev = this.screen;
+			this.screen = screen.init(arg);
+			this.screenFade = 75;
+		},
+
+		addMainCanvas: function () {
+			var ctx = utils.createCanvas(720, 405, "board");
+			ctx.canvas.backgroundColor = COLOR.back_main;
+
+			document.querySelector("#b").appendChild(ctx.canvas);
+			return ctx;
+		},
+
+		reset: function () {
+			this.input.reset();
+			this.setScreen(Screen.title);
+		},
+
+		run: function (d) {
+
+			if (!this.dialog) {
+				this.screen.tick(this.input);
+			} else {
+				if (!this.dialog.tick(this.input)) {
+					this.dialog = null;
+				}
+			}
+			this.input.tick();
+
+			this.screen.render(this.ctx);
+			if (this.screenFade-- > 0) {
+				this.ctx.globalAlpha = this.screenFade / 75;
+				this.screenPrev && this.screenPrev.render(this.ctx);
+				this.ctx.globalAlpha = 1;
+			}
+			this.dialog && this.dialog.render(this.ctx);
+
+			window.requestAnimationFrame(function () {
+				game.run(Date.now());
+			});
 		}
-		this.input.tick();
 
-		this.screen.render(this.ctx);
-		if (this.screenFade-- > 0) {
-			this.ctx.globalAlpha = this.screenFade / 75;
-			this.screenPrev && this.screenPrev.render(this.ctx);
-			this.ctx.globalAlpha = 1;
-		}
-		this.dialog && this.dialog.render(this.ctx);
+	};
 
-		window.requestAnimationFrame(function () {
-        	game.run(Date.now());
-		});
-	}
+	window.game = game;
 
-};
+}());
