@@ -3,6 +3,7 @@
 	Screen.level = {
 
 		numPieces: 4,
+		topZone: 7,
 
 		init: function () {
 			var tiles = makeSheet(game.res.tiles, game.tw, game.th);
@@ -72,7 +73,7 @@
 				// Find clear spot to spawn
 				while (!empty) {
 					x = Math.random() * (this.map.cellW - 4) | 0;
-					y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
+					y = (Math.random() * (this.map.cellH - 4 - this.topZone) | 0) + 2 + this.topZone;
 
 					// spawn somewhere near the player-ish (based on game completeness)
 					var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);

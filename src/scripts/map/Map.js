@@ -6,9 +6,10 @@
 		x: 0,
 		y: 0,
 
-		init: function (sheet, camera) {
+		init: function (sheet, camera, level) {
 			this.sheet = sheet;
 			this.camera = camera;
+			this.level = level;
 			this.walkable = BLOCKS.walkable;
 
 			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
@@ -107,7 +108,7 @@
 			for (i = 0; i < 60; i++) {
 				// Don't spawn at the top
 				pos = this.findFreeBlock();
-				while (pos[1] < 7) {
+				while (pos[1] < this.level.topZone) {
 					pos = this.findFreeBlock();
 				}
 
@@ -171,7 +172,6 @@
 				// Check if we are
 				pieces.push([pos[0], pos[1]]);
 			}
-			console.log("resest", resets)
 
 			return pieces;
 		},

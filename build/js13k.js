@@ -21,7 +21,6 @@
 				len = entities.length;
 
 			for (i = 0; i < len; i++) {
-
 				b = entities[i];
 
 				ax = a.x + (a.xbb || 0);
@@ -487,7 +486,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 							case 11:
 							case 12:
 								color = COLOR.tile.dirt;
-								if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
+								if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 7)) {
 									color = COLOR.tile.grass;
 								} else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
 									br = br * 2 / 3;
@@ -689,9 +688,10 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		x: 0,
 		y: 0,
 
-		init: function (sheet, camera) {
+		init: function (sheet, camera, level) {
 			this.sheet = sheet;
 			this.camera = camera;
+			this.level = level;
 			this.walkable = BLOCKS.walkable;
 
 			this.cells = this.expandRoomMap(rooms, this.generateRoomMap());
@@ -790,7 +790,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			for (i = 0; i < 60; i++) {
 				// Don't spawn at the top
 				pos = this.findFreeBlock();
-				while (pos[1] < 7) {
+				while (pos[1] < this.level.topZone) {
 					pos = this.findFreeBlock();
 				}
 
@@ -803,17 +803,55 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 			return pickup;
 		},
 
-		addPieces: function () {
+		addPieces: function (resets) {
 			var pieces = [],
-				pos;
+				pos,
+				minDistance = 85,
+				maxRetries = 100;
+
+			// Make all the peices far apart from each other...
+			// check distance from all other pieces
+			// if it's colser than X do it again.
+			// if it's been bunch of time and no cigar, retry the whole process.
+			// if too many retries, just give up.
+
+			resets = resets || 0;
 
 			for (var i = 0; i < 4; i++) {
-				// Don't spawn at the top
-				pos = this.findFreeBlock();
-				while (pos[1] < 7) {
+
+				var foundSpot = false,
+					tries = 0;
+
+				while (!foundSpot && tries < 10) {
+
+					// Don't spawn at the top
 					pos = this.findFreeBlock();
+					while (pos[1] < 7) {
+						pos = this.findFreeBlock();
+					}
+
+					var closest = pieces.reduce(function (closest, thisOne) {
+						var dist = utils.dist([pos[0], pos[1]], [thisOne[0], thisOne[1]]);
+						return Math.min(dist, closest);
+					}, window.Infinity);
+
+					if (closest > minDistance) {
+						foundSpot = true;
+					} else {
+						tries++;
+					}
+
 				}
 
+				if (!foundSpot) {
+					if(resets++ > maxRetries) {
+						break;
+					} else {
+						return this.addPieces(resets);
+					}
+				}
+
+				// Check if we are
 				pieces.push([pos[0], pos[1]]);
 			}
 
@@ -1938,7 +1976,6 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 		},
 
 		track: function (entity) {
-
 			var e = entity || this.entity;
 			this.x = e.x - (this.w / 2) + (e.w / 2);
 			this.y = e.y - (this.h / 2);
@@ -2084,7 +2121,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 	Screen.title = {
 
 		count: 0,
-		stars: [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8],
+		stars: new Array(18).join(",").split(","),
 
 		init: function () {
 			this.tiles = makeSheet(game.res.tiles, game.tw, game.th);
@@ -2133,9 +2170,10 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				}
 			}
 
-			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
 			game.res.font(c, "BY", 5, 84);
 			game.res.font(c, "MR SPEAKER", 5, 115);
+
+			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
 
 			c.restore();
 		}
@@ -2198,12 +2236,15 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 	Screen.level = {
 
+		numPieces: 4,
+		topZone: 7,
+
 		init: function () {
 			var tiles = makeSheet(game.res.tiles, game.tw, game.th);
 
 			this.player = new Player().init(game.tw * 2, game.th * 5, this);
 			this.camera = Camera.init(this.player, 0, 0, game.ctx.w, game.ctx.h);
-			this.map = Map.init(tiles, this.camera);
+			this.map = Map.init(tiles, this.camera, this);
 
 			this.pickups = this.map.pickups.map(function (p) {
 				return new Pickup().init(p[0] * game.tw, p[1] * game.th)
@@ -2266,7 +2307,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 				// Find clear spot to spawn
 				while (!empty) {
 					x = Math.random() * (this.map.cellW - 4) | 0;
-					y = (Math.random() * (this.map.cellH - 4 - 7) | 0) + 2 + 7;
+					y = (Math.random() * (this.map.cellH - 4 - this.topZone) | 0) + 2 + this.topZone;
 
 					// spawn somewhere near the player-ish (based on game completeness)
 					var dist = utils.dist([this.player.x, this.player.y], [x * game.tw, y * game.th]);

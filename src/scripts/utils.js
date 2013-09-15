@@ -18,7 +18,6 @@
 				len = entities.length;
 
 			for (i = 0; i < len; i++) {
-
 				b = entities[i];
 
 				ax = a.x + (a.xbb || 0);

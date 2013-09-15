@@ -56,12 +56,6 @@
 			game.res.font(c, "MR SPEAKER", 5, 115);
 
 			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
-			//c.save();
-			var comp = c.globalCompositeOperation;
-			c.globalCompositeOperation = "destination-out";
-			game.res.font(c, "GLOWBOUGS", 82 + Math.sin(Date.now() / 450) * 5, 10 + Math.cos(Date.now() / 350) * 2);
-			//c.restore();
-			c.globalCompositeOperation = comp;
 
 			c.restore();
 		}

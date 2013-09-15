@@ -36,11 +36,12 @@
 							case 11:
 							case 12:
 								color = COLOR.tile.dirt;
-								if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 8)) {
+								if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 7)) {
 									color = COLOR.tile.grass;
 								} else if ((y < (((x * x * 3 + x * 41) >> 2) & 3) + 9)) {
 									br = br * 2 / 3;
 								}
+								// Rounded corners
 								if (tile === 11 && x < 2 && y < 2) {
 									dist = Math.sqrt((2 - x) * (2 - x) + (2 - y) * (2 - y));
 									if (dist >= 1.8) {
@@ -64,7 +65,7 @@
 								break;
 							case 1:
 								color = Math.random() < 0.15 ? COLOR.tile.vine_leaves : -1;
-								if ((x + (y >> 2) * 16) % 8 == 1 || y % 8 == 0) {
+								if ((x - 4) % 11 == 0 || y % 8 == 0) {
 									color = COLOR.tile.vine_ladder;
 								}
 								break;
