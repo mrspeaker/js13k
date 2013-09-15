@@ -13,6 +13,5 @@ Made by [Mr Speaker](http://www.twitter.com/mrspeaker)
 
 ## Notes on the code
 
-Here be dragons. Written from scratch in a few days - don't got copy-pastin' this just yet. I'll try and clean it up. If you're reading this, then it's not clean yet.
-
+Here be dragons. Written from scratch in a few days.
 
