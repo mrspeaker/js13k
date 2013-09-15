@@ -67,6 +67,8 @@
 								color = Math.random() < 0.15 ? COLOR.tile.vine_leaves : -1;
 								if ((x - 4) % 11 == 0 || y % 8 == 0) {
 									color = COLOR.tile.vine_ladder;
+								} else if ((x - 3) % 11 == 0 || y % 8 == 1) {
+									color = COLOR.tile.dirt;
 								}
 								break;
 							case 2:
