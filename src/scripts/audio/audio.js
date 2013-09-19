@@ -64,7 +64,6 @@
 					o = c.createOscillator();
 
 				o.type = "sine"
-				o.frequency.value = 0;
 				o.frequency.setValueAtTime(300, now);
 				o.frequency.linearRampToValueAtTime(400, now + 0.09);
 
@@ -94,7 +93,6 @@
 					o = c.createOscillator();
 
 				o.type = "sine"
-				o.frequency.value = 0;
 				o.frequency.setValueAtTime(600, now);
 				o.frequency.linearRampToValueAtTime(2600, now + 0.12);
 
@@ -113,8 +111,7 @@
 
 				gainWithFilter(o, 1, 350, 1)[0].connect(audio.master);
 
-				o.type = "sine"
-
+				o.type = "sine";
 				lfo.type = "sine";
 				lfo.frequency.value = 10;
 				lfoGain.gain.setValueAtTime(10, now);
@@ -136,7 +133,6 @@
 				gainWithFilter(o, 0.10, 3000, 10)[0].connect(audio.master);
 
 				o.type = "square";
-				o.frequency.value = 0;
 				o.frequency.setValueAtTime(50, now);
 				o.frequency.linearRampToValueAtTime(600, now + 0.32);
 
